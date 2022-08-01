@@ -6,16 +6,16 @@ import (
 )
 
 type stringWriter struct {
-	str string
+	buff []byte
 }
 
 func (s *stringWriter) Write(p []byte) (n int, err error) {
-	s.str = fmt.Sprintf("%s%s", s.str, string(p))
+	s.buff = append(s.buff, p...)
 	return len(p), nil
 }
 
 func (s *stringWriter) String() string {
-	return s.str
+	return string(s.buff)
 }
 
 type StringWriter interface {
@@ -24,5 +24,7 @@ type StringWriter interface {
 }
 
 func NewStringWriter() StringWriter {
-	return &stringWriter{}
+	return &stringWriter{
+		buff: make([]byte, 0),
+	}
 }
