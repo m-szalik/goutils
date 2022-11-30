@@ -11,6 +11,10 @@ var parseValueIntRegEx, _ = regexp.Compile("^-?\\d+$")
 var parseValueFloatRegEx, _ = regexp.Compile("^-?\\d+\\.\\d+$")
 
 func BoolToStr(b bool, trueVal, falseVal string) string {
+	return BoolTo(b, trueVal, falseVal)
+}
+
+func BoolTo[T interface{}](b bool, trueVal, falseVal T) T {
 	if b {
 		return trueVal
 	} else {
