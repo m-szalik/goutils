@@ -63,3 +63,29 @@ func ParseValue(str string) interface{} {
 	}
 	return str
 }
+
+func AsFloat64(i interface{}) (float64, error) {
+	if i == nil {
+		return 0, fmt.Errorf("cannot convert nil to float64")
+	}
+	switch v := i.(type) {
+	case float32:
+		return float64(v), nil
+	case float64:
+		return v, nil
+	case int:
+		return float64(v), nil
+	case int32:
+		return float64(v), nil
+	case int64:
+		return float64(v), nil
+	case string:
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return 0, fmt.Errorf("cannot convert '%s' to float64 - %w", v, err)
+		}
+		return f, nil
+	default:
+		return 0, fmt.Errorf("unable to covert type %T to float64", i)
+	}
+}
