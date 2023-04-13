@@ -80,7 +80,7 @@ func AsFloat64(i interface{}) (float64, error) {
 	case int64:
 		return float64(v), nil
 	case string:
-		f, err := strconv.ParseFloat(v, 64)
+		f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
 		if err != nil {
 			return 0, fmt.Errorf("cannot convert '%s' to float64 - %w", v, err)
 		}

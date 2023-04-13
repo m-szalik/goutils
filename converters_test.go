@@ -63,3 +63,29 @@ func Test_ParseValue(t *testing.T) {
 		}
 	})
 }
+
+func TestAsFloat64(t *testing.T) {
+	tests := []struct {
+		arg     interface{}
+		want    float64
+		wantErr bool
+	}{
+		{"-17.2", -17.2, false},
+		{"17.2", 17.2, false},
+		{" 17.2 ", 17.2, false},
+		{"17", 17, false},
+		{17, 17, false},
+		{float32(17), 17, false},
+		{int64(17), 17, false},
+		{int32(17), 17, false},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("converting %v of type %T", tt.arg, tt.arg), func(t *testing.T) {
+			got, err := AsFloat64(tt.arg)
+			if tt.wantErr && err == nil {
+				assert2.Fail(t, "error expected")
+			}
+			assert2.Equalf(t, tt.want, got, "AsFloat64(%v)", tt.arg)
+		})
+	}
+}
