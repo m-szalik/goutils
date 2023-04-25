@@ -8,22 +8,22 @@ type rollingCollection[T comparable] struct {
 	data  []*T
 }
 
-func (r *rollingCollection[T]) removeIndex(index int) {
-	for i := index + 1; i < len(r.data); i++ {
-		r.data[i-1] = r.data[i]
+func (c *rollingCollection[T]) removeIndex(index int) {
+	for i := index + 1; i < len(c.data); i++ {
+		c.data[i-1] = c.data[i]
 	}
-	r.count--
+	c.count--
 }
 
-func (r *rollingCollection[T]) Remove(removeMe T) int {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	to := len(r.data)
+func (c *rollingCollection[T]) Remove(removeMe T) int {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	to := len(c.data)
 	removals := 0
 	for i := 0; i < to; i++ {
-		ptr := r.data[i]
+		ptr := c.data[i]
 		if *ptr == removeMe {
-			r.removeIndex(i)
+			c.removeIndex(i)
 			removals++
 			to--
 		}
@@ -31,29 +31,29 @@ func (r *rollingCollection[T]) Remove(removeMe T) int {
 	return removals
 }
 
-func (r *rollingCollection[T]) Add(value T) {
-	r.lock.Lock()
-	r.lock.Unlock()
-	if r.count >= cap(r.data) {
-		r.removeIndex(0)
+func (c *rollingCollection[T]) Add(value T) {
+	c.lock.Lock()
+	c.lock.Unlock()
+	if c.count >= cap(c.data) {
+		c.removeIndex(0)
 	}
-	r.data[r.count] = &value
-	r.count++
+	c.data[c.count] = &value
+	c.count++
 }
 
-func (r *rollingCollection[T]) Length() int {
-	return r.count
+func (c *rollingCollection[T]) Length() int {
+	return c.count
 }
 
-func (r *rollingCollection[T]) Get(index int) *T {
-	if index < 0 || index >= r.count {
+func (c *rollingCollection[T]) Get(index int) *T {
+	if index < 0 || index >= c.count {
 		return nil
 	}
-	return r.data[index]
+	return c.data[index]
 }
 
-func (r *rollingCollection[T]) GetRange() []*T {
-	return r.data[0:r.count]
+func (c *rollingCollection[T]) GetRange() []*T {
+	return c.data[0:c.count]
 }
 
 func NewRollingCollection[T comparable](maxElements int) Collection[T] {
