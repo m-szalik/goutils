@@ -26,3 +26,21 @@ func Test_simpleCollectionString(t *testing.T) {
 	}
 	assert.Equal(t, "0,1,2", fmt.Sprint(col))
 }
+
+func BenchmarkAddElements(b *testing.B) {
+	col := NewSimpleCollection[int]()
+	for i := 0; i < b.N; i++ {
+		col.Add(i)
+	}
+}
+
+func BenchmarkRemoveElements(b *testing.B) {
+	col := NewSimpleCollection[int]()
+	for i := 0; i < b.N; i++ {
+		col.Add(i)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		col.Remove(i)
+	}
+}
