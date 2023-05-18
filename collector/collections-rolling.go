@@ -15,30 +15,34 @@ func (c *rollingCollection[T]) removeIndex(index int) {
 	c.count--
 }
 
-func (c *rollingCollection[T]) Remove(removeMe T) int {
+func (c *rollingCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	to := len(c.data)
 	removals := 0
-	for i := 0; i < to; i++ {
-		ptr := c.data[i]
-		if *ptr == removeMe {
-			c.removeIndex(i)
-			removals++
-			to--
+	for _, removeMe := range removeMeElements {
+		for i := 0; i < to; i++ {
+			ptr := c.data[i]
+			if *ptr == removeMe {
+				c.removeIndex(i)
+				removals++
+				to--
+			}
 		}
 	}
 	return removals
 }
 
-func (c *rollingCollection[T]) Add(value T) {
+func (c *rollingCollection[T]) Add(values ...T) {
 	c.lock.Lock()
 	c.lock.Unlock()
-	if c.count >= cap(c.data) {
-		c.removeIndex(0)
+	for _, v := range values {
+		if c.count >= cap(c.data) {
+			c.removeIndex(0)
+		}
+		c.data[c.count] = &v
+		c.count++
 	}
-	c.data[c.count] = &value
-	c.count++
 }
 
 func (c *rollingCollection[T]) Length() int {

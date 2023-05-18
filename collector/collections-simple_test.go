@@ -12,11 +12,11 @@ func Test_simpleCollectionRemove(t *testing.T) {
 		col.Add(i)
 	}
 	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6}, convert(col.AsSlice()))
-	col.Remove(3)
-	assert.Equal(t, []int{0, 1, 2, 4, 5, 6}, convert(col.AsSlice()))
+	col.Remove(3, 5)
+	assert.Equal(t, []int{0, 1, 2, 4, 6}, convert(col.AsSlice()))
 	col.Add(9)
-	assert.Equal(t, []int{0, 1, 2, 4, 5, 6, 9}, convert(col.AsSlice()))
-	assert.Equal(t, 7, col.Length())
+	assert.Equal(t, []int{0, 1, 2, 4, 6, 9}, convert(col.AsSlice()))
+	assert.Equal(t, 6, col.Length())
 }
 
 func Test_simpleCollectionString(t *testing.T) {

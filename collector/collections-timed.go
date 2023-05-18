@@ -17,33 +17,37 @@ type timedCollection[T comparable] struct {
 	duration     time.Duration
 }
 
-func (c *timedCollection[T]) Remove(removeMe T) int {
+func (c *timedCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	to := len(c.data)
 	removals := 0
-	for i := 0; i < to; i++ {
-		ptr := c.data[i]
-		if ptr.element == removeMe {
-			c.removeIndex(i)
-			removals++
-			to--
+	for _, removeMe := range removeMeElements {
+		for i := 0; i < to; i++ {
+			ptr := c.data[i]
+			if ptr.element == removeMe {
+				c.removeIndex(i)
+				removals++
+				to--
+			}
 		}
 	}
 	return removals
 }
 
-func (c *timedCollection[T]) Add(value T) {
+func (c *timedCollection[T]) Add(values ...T) {
 	c.lock.Lock()
-	c.lock.Unlock()
-	if c.count >= cap(c.data) {
-		if c.cleanup() == 0 {
-			c.removeIndex(0)
+	defer c.lock.Unlock()
+	for _, value := range values {
+		if c.count >= cap(c.data) {
+			if c.cleanup() == 0 {
+				c.removeIndex(0)
+			}
 		}
-	}
-	c.data[c.count] = &timedWrapper[T]{
-		time:    c.timeProvider.Now().Add(c.duration),
-		element: value,
+		c.data[c.count] = &timedWrapper[T]{
+			time:    c.timeProvider.Now().Add(c.duration),
+			element: value,
+		}
 	}
 	c.count++
 }

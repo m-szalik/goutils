@@ -17,17 +17,19 @@ func (c *simpleCollection[T]) removeIndex(index int) {
 	}
 }
 
-func (c *simpleCollection[T]) Remove(removeMe T) int {
+func (c *simpleCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	to := len(c.data)
 	removals := 0
-	for i := 0; i < to; i++ {
-		ptr := c.data[i]
-		if *ptr == removeMe {
-			c.removeIndex(i)
-			removals++
-			to--
+	for _, removeMe := range removeMeElements {
+		for i := 0; i < to; i++ {
+			ptr := c.data[i]
+			if *ptr == removeMe {
+				c.removeIndex(i)
+				removals++
+				to--
+			}
 		}
 	}
 	if removals > 0 {
@@ -36,10 +38,12 @@ func (c *simpleCollection[T]) Remove(removeMe T) int {
 	return removals
 }
 
-func (c *simpleCollection[T]) Add(value T) {
+func (c *simpleCollection[T]) Add(elements ...T) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.data = append(c.data, &value)
+	for _, elem := range elements {
+		c.data = append(c.data, &elem)
+	}
 }
 
 func (c *simpleCollection[T]) Length() int {

@@ -1,9 +1,9 @@
 package collector
 
 type Collection[T interface{}] interface {
-	Add(element T)
+	Add(elements ...T)
 	AsSlice() []*T
-	Remove(element T) int
+	Remove(elements ...T) int
 	Length() int
 	Get(index int) *T
 }
