@@ -60,7 +60,7 @@ func (c *timedCollection[T]) Get(index int) *T {
 	return &wrapper.element
 }
 
-func (c *timedCollection[T]) GetRange() []*T {
+func (c *timedCollection[T]) AsSlice() []*T {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.cleanup()

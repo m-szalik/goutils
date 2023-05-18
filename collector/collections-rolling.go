@@ -52,7 +52,7 @@ func (c *rollingCollection[T]) Get(index int) *T {
 	return c.data[index]
 }
 
-func (c *rollingCollection[T]) GetRange() []*T {
+func (c *rollingCollection[T]) AsSlice() []*T {
 	return c.data[0:c.count]
 }
 

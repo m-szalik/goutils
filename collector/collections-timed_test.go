@@ -32,7 +32,7 @@ func Test_timedCollectionAdd(t *testing.T) {
 					col.Add(elem)
 				}
 			}
-			assert.Equal(t, tt.expected, convert(col.GetRange()))
+			assert.Equal(t, tt.expected, convert(col.AsSlice()))
 		})
 	}
 }

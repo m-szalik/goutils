@@ -21,7 +21,7 @@ func Test_rollingCollectionAdd(t *testing.T) {
 			for i := 0; i < tt.noOfItemsToAdd; i++ {
 				col.Add(i)
 			}
-			assert.Equal(t, tt.expected, convert(col.GetRange()))
+			assert.Equal(t, tt.expected, convert(col.AsSlice()))
 		})
 	}
 }
@@ -31,11 +31,11 @@ func Test_rollingCollectionRemove(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		col.Add(i)
 	}
-	assert.Equal(t, []int{2, 3, 4, 5, 6}, convert(col.GetRange()))
+	assert.Equal(t, []int{2, 3, 4, 5, 6}, convert(col.AsSlice()))
 	col.Remove(3)
-	assert.Equal(t, []int{2, 4, 5, 6}, convert(col.GetRange()))
+	assert.Equal(t, []int{2, 4, 5, 6}, convert(col.AsSlice()))
 	col.Add(9)
-	assert.Equal(t, []int{2, 4, 5, 6, 9}, convert(col.GetRange()))
+	assert.Equal(t, []int{2, 4, 5, 6, 9}, convert(col.AsSlice()))
 }
 
 func convert[T comparable](source []*T) []T {
