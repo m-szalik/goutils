@@ -56,6 +56,7 @@ func (c *rollingCollection[T]) GetRange() []*T {
 	return c.data[0:c.count]
 }
 
+// NewRollingCollection - collection that keeps maxElements only - the oldest elements are removed automatically
 func NewRollingCollection[T comparable](maxElements int) Collection[T] {
 	return &rollingCollection[T]{
 		lock:  sync.Mutex{},
