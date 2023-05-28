@@ -89,3 +89,20 @@ func TestAsFloat64(t *testing.T) {
 		})
 	}
 }
+func TestRoundFloat64(t *testing.T) {
+	tests := []struct {
+		arg       float64
+		precision uint
+		want      float64
+	}{
+		{1.0 / 3.0, 9, 0.333333333},
+		{1.0 / 3.0, 2, 0.33},
+		{1.0 / 3.0, 0, 0},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("RoundFloat(%f, %d) = %f", tt.arg, tt.precision, tt.want), func(t *testing.T) {
+			result := RoundFloat(tt.arg, tt.precision)
+			assert2.Equal(t, tt.want, result)
+		})
+	}
+}

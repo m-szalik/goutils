@@ -2,6 +2,7 @@ package goutils
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -88,4 +89,9 @@ func AsFloat64(i interface{}) (float64, error) {
 	default:
 		return 0, fmt.Errorf("unable to covert type %T to float64", i)
 	}
+}
+
+func RoundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
 }
