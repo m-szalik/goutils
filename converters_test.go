@@ -42,10 +42,70 @@ func Test_ParseValue(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("convertValue_%s", tt.arg), func(t *testing.T) {
+		t.Run(fmt.Sprintf("ParseValue_%s", tt.arg), func(t *testing.T) {
 			got := ParseValue(tt.arg)
 			if got != tt.want {
-				t.Errorf("convertValue() got = %v, want %v", got, tt.want)
+				t.Errorf("ParseValue() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
+	t.Run("ParseValue_floats", func(t *testing.T) {
+		for _, f := range []float64{-19.01, 193.834} {
+			t.Run(fmt.Sprintf("convert_%f", f), func(t *testing.T) {
+				str := fmt.Sprint(f)
+				value := ParseValue(str)
+				assert2.NotNil(t, value)
+				if math.Abs(value.(float64)-f) > 0.00001 {
+					assert2.Equal(t, value, f)
+				}
+			})
+		}
+	})
+}
+
+func Test_ParseBool(t *testing.T) {
+	tests := []struct {
+		arg         string
+		want        bool
+		expectError bool
+	}{
+		{
+			arg:  "true",
+			want: true,
+		},
+		{
+			arg:  " 0",
+			want: false,
+		},
+		{
+			arg:  "\toff ",
+			want: false,
+		},
+		{
+			arg:  "TrUE",
+			want: true,
+		},
+		{
+			arg:  " on ",
+			want: true,
+		},
+		{
+			arg:         "blabla",
+			want:        false,
+			expectError: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("ParseBool_%s", tt.arg), func(t *testing.T) {
+			got, err := ParseBool(tt.arg)
+			assert2.Equal(t, tt.want, got)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("ParseBool() error expected")
+				}
+			} else {
+				assert2.NoError(t, err)
 			}
 		})
 	}

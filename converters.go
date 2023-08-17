@@ -33,14 +33,26 @@ func HexToInt(hex string) (int, error) {
 	return int(i), nil
 }
 
+// ParseBool - return bool. True is one of "true", "1", "on", false is one of "false", "0", "off"
+func ParseBool(str string) (bool, error) {
+	s := strings.ToLower(strings.TrimSpace(str))
+	switch s {
+	case "true", "1", "on":
+		return true, nil
+	case "false", "0", "off":
+		return false, nil
+	default:
+		return false, fmt.Errorf("unable to parse '%s' as boolean", str)
+	}
+}
+
 // ParseValue - returns one of int64, flot64, string, bool, nil
 func ParseValue(str string) interface{} {
-	s := strings.ToLower(strings.Trim(str, " \t"))
+	if b, err := ParseBool(str); err == nil {
+		return b
+	}
+	s := strings.ToLower(strings.TrimSpace(str))
 	switch s {
-	case "true":
-		return true
-	case "false":
-		return false
 	case "null", "nil":
 		return nil
 	default:
