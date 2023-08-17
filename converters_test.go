@@ -166,3 +166,29 @@ func TestRoundFloat64(t *testing.T) {
 		})
 	}
 }
+
+func TestHexToInt(t *testing.T) {
+	tests := []struct {
+		args    string
+		want    int
+		wantErr assert2.ErrorAssertionFunc
+	}{
+		{"A", 10, assert2.NoError},
+		{"0xA", 10, assert2.NoError},
+		{"0X0A", 10, assert2.NoError},
+		{"0B", 11, assert2.NoError},
+		{"-B", -11, assert2.NoError},
+		{"-b", -11, assert2.NoError},
+		{"-0xb", -11, assert2.NoError},
+		{"invalid", 0, assert2.Error},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("HexToInt(\"%s\") is %d", tt.args, tt.want), func(t *testing.T) {
+			got, err := HexToInt(tt.args)
+			if !tt.wantErr(t, err, fmt.Sprintf("HexToInt(%v)", tt.args)) {
+				return
+			}
+			assert2.Equalf(t, tt.want, got, "HexToInt(%v)", tt.args)
+		})
+	}
+}
