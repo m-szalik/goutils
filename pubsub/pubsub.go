@@ -6,8 +6,8 @@ import (
 )
 
 type PubSub[E interface{}] interface {
-	Publisher() chan<- E
-	NewSubscriber() <-chan E
+	NewPublisher() chan<- E
+	NewSubscriber(ctx context.Context) <-chan E
 }
 
 type pubSubImpl[E interface{}] struct {
@@ -16,15 +16,23 @@ type pubSubImpl[E interface{}] struct {
 	subscriptions  []chan E
 }
 
-func (p *pubSubImpl[E]) Publisher() chan<- E {
+func (p *pubSubImpl[E]) NewPublisher() chan<- E {
 	return p.publishChannel
 }
 
-func (p *pubSubImpl[E]) NewSubscriber() <-chan E {
+func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	ch := make(chan E)
 	p.subscriptions = append(p.subscriptions, ch)
+	pos := len(p.subscriptions) - 1
+	go func() {
+		<-ctx.Done()
+		p.lock.Lock()
+		defer p.lock.Unlock()
+		p.subscriptions = append(p.subscriptions[:pos], p.subscriptions[pos+1:]...)
+		close(ch)
+	}()
 	return ch
 }
 
