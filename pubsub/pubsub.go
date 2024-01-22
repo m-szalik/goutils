@@ -52,6 +52,7 @@ func (p *pubSubImpl[E]) push(e E) {
 	}
 }
 
+// NewPubSub - create new Publisher-Subscribers pair
 func NewPubSub[E interface{}](ctx context.Context) PubSub[E] {
 	pubCh := make(chan E)
 	subs := make([]chan E, 0)
