@@ -13,7 +13,7 @@ type testSubscriber struct {
 	data   []int
 }
 
-func newTestSubscriber(parent context.Context, index int, ps PubSub[int]) *testSubscriber {
+func newTestSubscriber(parent context.Context, name int, ps PubSub[int]) *testSubscriber {
 	ctx, cancel := context.WithCancel(parent)
 	input := ps.NewSubscriber(ctx)
 	ts := &testSubscriber{
@@ -24,7 +24,7 @@ func newTestSubscriber(parent context.Context, index int, ps PubSub[int]) *testS
 		for {
 			select {
 			case d := <-input:
-				fmt.Printf("subscriber %d recived data: %d\n", index, d)
+				fmt.Printf("test-subscriber %c recived message '%d'\n", name, d)
 				ts.data = append(ts.data, d)
 			case <-ctx.Done():
 				return
@@ -39,8 +39,8 @@ func TestNewPubSubMultipleSubscribers(t *testing.T) {
 	defer cancel()
 	subscribers := make([]*testSubscriber, 0)
 	ps := NewPubSub[int](ctx)
-	subscribers = append(subscribers, newTestSubscriber(ctx, 0, ps))
-	subscribers = append(subscribers, newTestSubscriber(ctx, 1, ps))
+	subscribers = append(subscribers, newTestSubscriber(ctx, 'A', ps))
+	subscribers = append(subscribers, newTestSubscriber(ctx, 'B', ps))
 	publishCh := ps.NewPublisher()
 	publishCh <- 0
 	publishCh <- 1
@@ -49,10 +49,15 @@ func TestNewPubSubMultipleSubscribers(t *testing.T) {
 	delay()
 	publishCh <- 2
 	delay()
-	fmt.Println(subscribers[0].data)
-	fmt.Println(subscribers[1].data)
 	assert.Equal(t, []int{0, 1}, subscribers[0].data)
 	assert.Equal(t, []int{0, 1, 2}, subscribers[1].data)
+	subscribers = append(subscribers, newTestSubscriber(ctx, 'C', ps))
+	delay()
+	publishCh <- 3
+	delay()
+	assert.Equal(t, []int{0, 1}, subscribers[0].data)
+	assert.Equal(t, []int{0, 1, 2, 3}, subscribers[1].data)
+	assert.Equal(t, []int{3}, subscribers[2].data)
 }
 
 func delay() {

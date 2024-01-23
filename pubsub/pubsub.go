@@ -32,12 +32,16 @@ func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
 	defer p.lock.Unlock()
 	ch := make(chan E)
 	p.subscriptions = append(p.subscriptions, ch)
-	pos := len(p.subscriptions) - 1
 	go func() {
 		<-ctx.Done()
 		p.lock.Lock()
 		defer p.lock.Unlock()
-		p.subscriptions = append(p.subscriptions[:pos], p.subscriptions[pos+1:]...)
+		for i, c := range p.subscriptions {
+			if c == ch {
+				p.subscriptions = append(p.subscriptions[:i], p.subscriptions[i+1:]...)
+				break
+			}
+		}
 		close(ch)
 	}()
 	return ch
@@ -49,9 +53,6 @@ func (p *pubSubImpl[E]) close() {
 	if !p.closed {
 		p.closed = true
 		close(p.publishChannel)
-		for _, sub := range p.subscriptions {
-			close(sub)
-		}
 		p.subscriptions = make([]chan E, 0)
 	}
 }
