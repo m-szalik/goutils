@@ -36,12 +36,14 @@ func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
 	return ch
 }
 
-func (p *pubSubImpl[E]) closeSubs() {
+func (p *pubSubImpl[E]) close() {
 	p.lock.Lock()
 	defer p.lock.Unlock()
+	close(p.publishChannel)
 	for _, sub := range p.subscriptions {
 		close(sub)
 	}
+	p.subscriptions = make([]chan E, 0)
 }
 
 func (p *pubSubImpl[E]) push(e E) {
@@ -63,8 +65,7 @@ func NewPubSub[E interface{}](ctx context.Context) PubSub[E] {
 	}
 	go func() {
 		defer func() {
-			close(pubCh)
-			ps.closeSubs()
+			ps.close()
 		}()
 		for {
 			select {
