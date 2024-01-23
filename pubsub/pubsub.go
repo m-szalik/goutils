@@ -14,13 +14,20 @@ type pubSubImpl[E interface{}] struct {
 	lock           sync.Mutex
 	publishChannel chan E
 	subscriptions  []chan E
+	closed         bool
 }
 
 func (p *pubSubImpl[E]) NewPublisher() chan<- E {
+	if p.closed {
+		panic("new publisher cannot be created, pubSub already closed")
+	}
 	return p.publishChannel
 }
 
 func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
+	if p.closed {
+		panic("new subscriber cannot be created, pubSub already closed")
+	}
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	ch := make(chan E)
@@ -39,11 +46,14 @@ func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
 func (p *pubSubImpl[E]) close() {
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	close(p.publishChannel)
-	for _, sub := range p.subscriptions {
-		close(sub)
+	if !p.closed {
+		p.closed = true
+		close(p.publishChannel)
+		for _, sub := range p.subscriptions {
+			close(sub)
+		}
+		p.subscriptions = make([]chan E, 0)
 	}
-	p.subscriptions = make([]chan E, 0)
 }
 
 func (p *pubSubImpl[E]) push(e E) {
