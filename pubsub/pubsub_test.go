@@ -23,7 +23,10 @@ func newTestSubscriber(parent context.Context, name int, ps PubSub[int]) *testSu
 	go func() {
 		for {
 			select {
-			case d := <-input:
+			case d, ok := <-input:
+				if !ok {
+					return
+				}
 				fmt.Printf("test-subscriber %c recived message '%d'\n", name, d)
 				ts.data = append(ts.data, d)
 			case <-ctx.Done():
@@ -32,6 +35,10 @@ func newTestSubscriber(parent context.Context, name int, ps PubSub[int]) *testSu
 		}
 	}()
 	return ts
+}
+
+func delay() {
+	time.Sleep(100 * time.Millisecond)
 }
 
 func TestNewPubSubMultipleSubscribers(t *testing.T) {
@@ -60,6 +67,19 @@ func TestNewPubSubMultipleSubscribers(t *testing.T) {
 	assert.Equal(t, []int{3}, subscribers[2].data)
 }
 
-func delay() {
-	time.Sleep(100 * time.Millisecond)
+func TestNewPubSubShutdown(t *testing.T) {
+	subCtx, subCancel := context.WithCancel(context.TODO())
+	defer subCancel()
+	subscribers := make([]*testSubscriber, 0)
+	ctx, cancel := context.WithCancel(context.TODO())
+	ps := NewPubSub[int](ctx)
+	subscribers = append(subscribers, newTestSubscriber(subCtx, 'A', ps))
+	subscribers = append(subscribers, newTestSubscriber(subCtx, 'B', ps))
+	publishCh := ps.NewPublisher()
+	publishCh <- 0
+	publishCh <- 1
+	delay()
+	cancel()
+	assert.Equal(t, []int{0, 1}, subscribers[0].data)
+	assert.Equal(t, []int{0, 1, 2}, subscribers[1].data)
 }

@@ -53,6 +53,9 @@ func (p *pubSubImpl[E]) close() {
 	if !p.closed {
 		p.closed = true
 		close(p.publishChannel)
+		for _, subCh := range p.subscriptions {
+			close(subCh)
+		}
 		p.subscriptions = make([]chan E, 0)
 	}
 }
