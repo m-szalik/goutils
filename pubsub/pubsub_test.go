@@ -35,7 +35,7 @@ func newTestSubscriber(parent context.Context, index int, ps PubSub[int]) *testS
 }
 
 func TestNewPubSubMultipleSubscribers(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Minute) // fixme
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 	subscribers := make([]*testSubscriber, 0)
 	ps := NewPubSub[int](ctx)
