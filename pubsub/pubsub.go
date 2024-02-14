@@ -32,7 +32,7 @@ func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
 	defer p.lock.Unlock()
 	ch := make(chan E)
 	p.subscriptions = append(p.subscriptions, ch)
-	go func() {
+	go func(ch_ chan E) {
 		<-ctx.Done()
 		p.lock.Lock()
 		defer p.lock.Unlock()
@@ -42,8 +42,11 @@ func (p *pubSubImpl[E]) NewSubscriber(ctx context.Context) <-chan E {
 				break
 			}
 		}
-		close(ch)
-	}()
+		defer func() {
+			_ = recover() // recover closing of closed channel
+		}()
+		close(ch_)
+	}(ch)
 	return ch
 }
 

@@ -19,7 +19,7 @@ func TestSliceIndexOf(t *testing.T) {
 	}{
 		{name: "NotFound", args: args{slice: sliceA, e: "bar"}, want: -1},
 		{name: "Zero", args: args{slice: sliceA, e: "A"}, want: 0},
-		{name: "3.14", args: args{slice: sliceA, e: 3.14}, want: 0},
+		{name: "3.14", args: args{slice: sliceA, e: 3.14}, want: 3},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

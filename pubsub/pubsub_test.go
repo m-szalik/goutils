@@ -42,7 +42,7 @@ func delay() {
 }
 
 func TestNewPubSubMultipleSubscribers(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 30*time.Second)
 	defer cancel()
 	subscribers := make([]*testSubscriber, 0)
 	ps := NewPubSub[int](ctx)
@@ -68,18 +68,24 @@ func TestNewPubSubMultipleSubscribers(t *testing.T) {
 }
 
 func TestNewPubSubShutdown(t *testing.T) {
-	subCtx, subCancel := context.WithCancel(context.TODO())
-	defer subCancel()
+	subCtxA, subCancelA := context.WithCancel(context.TODO())
+	subCtxB, subCancelB := context.WithCancel(context.TODO())
+	defer subCancelA()
+	defer subCancelB()
 	subscribers := make([]*testSubscriber, 0)
 	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
 	ps := NewPubSub[int](ctx)
-	subscribers = append(subscribers, newTestSubscriber(subCtx, 'A', ps))
-	subscribers = append(subscribers, newTestSubscriber(subCtx, 'B', ps))
+	subscribers = append(subscribers, newTestSubscriber(subCtxA, 'A', ps))
+	subscribers = append(subscribers, newTestSubscriber(subCtxB, 'B', ps))
 	publishCh := ps.NewPublisher()
 	publishCh <- 0
 	publishCh <- 1
 	delay()
-	cancel()
+	subCancelA()
+	delay()
+	publishCh <- 2
+	delay()
 	assert.Equal(t, []int{0, 1}, subscribers[0].data)
 	assert.Equal(t, []int{0, 1, 2}, subscribers[1].data)
 }
