@@ -1,5 +1,7 @@
 # Project goutils
 [![Go](https://github.com/m-szalik/goutils/actions/workflows/go.yml/badge.svg)](https://github.com/m-szalik/goutils/actions/workflows/go.yml)
+
+
 Simple and useful functions for go.
 
 ## Package: goutils
