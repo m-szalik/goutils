@@ -11,10 +11,12 @@ import (
 var parseValueIntRegEx, _ = regexp.Compile("^-?\\d+$")
 var parseValueFloatRegEx, _ = regexp.Compile("^-?\\d+\\.\\d+$")
 
+// BoolToStr - return string for true or false bool value
 func BoolToStr(b bool, trueVal, falseVal string) string {
 	return BoolTo(b, trueVal, falseVal)
 }
 
+// BoolTo - return T object for true or false bool value
 func BoolTo[T interface{}](b bool, trueVal, falseVal T) T {
 	if b {
 		return trueVal
@@ -23,6 +25,7 @@ func BoolTo[T interface{}](b bool, trueVal, falseVal T) T {
 	}
 }
 
+// HexToInt convert hex representation to int
 func HexToInt(hex string) (int, error) {
 	hex = strings.Replace(hex, "0x", "", -1)
 	hex = strings.Replace(hex, "0X", "", -1)
@@ -46,7 +49,8 @@ func ParseBool(str string) (bool, error) {
 	}
 }
 
-// ParseValue - returns one of int64, flot64, string, bool, nil
+// ParseValue - converts string to one of int64, flot64, string, bool, nil.
+// If impossible to covert the same string is returned.
 func ParseValue(str string) interface{} {
 	if b, err := ParseBool(str); err == nil {
 		return b
@@ -77,6 +81,7 @@ func ParseValue(str string) interface{} {
 	return str
 }
 
+// AsFloat64 - convert multiple types (float32,int,int32,int64,string,[]byte) to float64
 func AsFloat64(i interface{}) (float64, error) {
 	if i == nil {
 		return 0, fmt.Errorf("cannot convert nil to float64")
@@ -92,6 +97,12 @@ func AsFloat64(i interface{}) (float64, error) {
 		return float64(v), nil
 	case int64:
 		return float64(v), nil
+	case []byte:
+		f, err := strconv.ParseFloat(strings.TrimSpace(string(v)), 64)
+		if err != nil {
+			return 0, fmt.Errorf("cannot convert '%s' to float64 - %w", v, err)
+		}
+		return f, nil
 	case string:
 		f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
 		if err != nil {
@@ -103,6 +114,7 @@ func AsFloat64(i interface{}) (float64, error) {
 	}
 }
 
+// RoundFloat round float64 number
 func RoundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio

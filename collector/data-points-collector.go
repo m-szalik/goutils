@@ -170,6 +170,7 @@ func newDataPointsCollectorInternal(maxSamples int, tp goutils.TimeProvider) Dat
 	}
 }
 
+// NewDataPointsCollector collection that can calculate Avg, Max or Min over a time window.
 func NewDataPointsCollector(maxSamples int) DataPointsCollector {
 	return newDataPointsCollectorInternal(maxSamples, goutils.SystemTimeProvider())
 }

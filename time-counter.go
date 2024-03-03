@@ -1,13 +1,14 @@
-package collector
+package goutils
 
 import (
-	"github.com/m-szalik/goutils"
 	"sync"
 	"time"
 )
 
+// TODO documentation
+
 type TimeCounter struct {
-	timeProvider goutils.TimeProvider
+	timeProvider TimeProvider
 	sessionStart *time.Time
 	continued    time.Duration
 	lock         sync.Mutex
@@ -53,7 +54,7 @@ func (d *TimeCounter) Stop() {
 	}
 }
 
-func newTimeCounterInternal(tp goutils.TimeProvider) *TimeCounter {
+func newTimeCounterInternal(tp TimeProvider) *TimeCounter {
 	tc := &TimeCounter{
 		timeProvider: tp,
 		lock:         sync.Mutex{},
@@ -62,5 +63,5 @@ func newTimeCounterInternal(tp goutils.TimeProvider) *TimeCounter {
 }
 
 func NewTimeCounter() *TimeCounter {
-	return newTimeCounterInternal(goutils.SystemTimeProvider())
+	return newTimeCounterInternal(SystemTimeProvider())
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// StopWatch - stopWatch utility
 type StopWatch interface {
 	Start() StopWatch
 	Stop()
@@ -14,15 +15,16 @@ type StopWatch interface {
 }
 
 type stopWatch struct {
-	lock      sync.Mutex
-	duration  time.Duration
-	lastStart *time.Time
+	timeProvider TimeProvider
+	lock         sync.Mutex
+	duration     time.Duration
+	lastStart    *time.Time
 }
 
 func (s *stopWatch) Start() StopWatch {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	now := time.Now()
+	now := s.timeProvider.Now()
 	s.lastStart = &now
 	return s
 }
@@ -31,7 +33,7 @@ func (s *stopWatch) Stop() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if s.lastStart != nil {
-		dur := time.Now().Sub(*s.lastStart)
+		dur := s.timeProvider.Now().Sub(*s.lastStart)
 		s.lastStart = nil
 		s.duration += dur
 	}
@@ -58,7 +60,7 @@ func (s *stopWatch) durationCalculation() (time.Duration, bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if s.lastStart != nil {
-		dur := time.Now().Sub(*s.lastStart)
+		dur := s.timeProvider.Now().Sub(*s.lastStart)
 		return s.duration + dur, true
 	} else {
 		return s.duration, false
@@ -66,9 +68,14 @@ func (s *stopWatch) durationCalculation() (time.Duration, bool) {
 }
 
 func NewStopWatch() StopWatch {
+	return NewStopWatchWithTimeProvider(SystemTimeProvider())
+}
+
+func NewStopWatchWithTimeProvider(timeProvider TimeProvider) StopWatch {
 	return &stopWatch{
-		lock:      sync.Mutex{},
-		duration:  time.Duration(0),
-		lastStart: nil,
+		timeProvider: timeProvider,
+		lock:         sync.Mutex{},
+		duration:     time.Duration(0),
+		lastStart:    nil,
 	}
 }

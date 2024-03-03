@@ -13,12 +13,14 @@ func ExitNow(code int, message string, messageArgs ...interface{}) {
 	os.Exit(code)
 }
 
+// ExitOnError exit the program if error occur
 func ExitOnError(err error, code int, message string, messageArgs ...interface{}) {
 	if err != nil {
 		ExitNow(code, message, messageArgs...)
 	}
 }
 
+// Env retrieves the value of the environment variable named by the key. If not defined then default value is returned.
 func Env(name string, def string) string {
 	s := os.Getenv(name)
 	if s == "" {
@@ -27,6 +29,7 @@ func Env(name string, def string) string {
 	return s
 }
 
+// EnvInt retrieves the value as int of the environment variable named by the key. If not defined then default value is returned.
 func EnvInt(name string, def int) int {
 	s := os.Getenv(name)
 	if s == "" {

@@ -1,7 +1,6 @@
-package collector
+package goutils
 
 import (
-	"github.com/m-szalik/goutils"
 	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
@@ -10,7 +9,7 @@ import (
 
 func TestTimeCounter(t *testing.T) {
 	t.Run("time-counter", func(t *testing.T) {
-		mockTp := goutils.NewMockTimeProvider()
+		mockTp := NewMockTimeProvider()
 		dc := newTimeCounterInternal(mockTp)
 		assert.Equal(t, time.Duration(0), dc.Value())
 		dc.Start()

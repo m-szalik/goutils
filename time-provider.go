@@ -2,6 +2,7 @@ package goutils
 
 import "time"
 
+// TimeProvider abstraction for receiving current time
 type TimeProvider interface {
 	Now() time.Time
 }

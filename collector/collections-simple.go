@@ -87,7 +87,7 @@ func (c *simpleCollection[T]) String() string {
 	return strings.Join(strs, ",")
 }
 
-// NewSimpleCollection - collection that keeps elements
+// NewSimpleCollection - collection that keeps all elements, slice that grows when needed
 func NewSimpleCollection[T comparable]() Collection[T] {
 	return &simpleCollection[T]{
 		lock: sync.Mutex{},
