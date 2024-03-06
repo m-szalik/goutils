@@ -95,5 +95,7 @@ Few implementation throttling.
 ```shell
 go get github.com/m-szalik/goutils/pubsub 
 ```
-Simple Publish-Subscribe implementation based on channels.
+Simple Publish-Subscribe implementation based on channels.  
+Implementation allows to have multiple subscribers as well as multiple publishers.
 
+[Example](./pubsub/example.go)

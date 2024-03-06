@@ -89,3 +89,7 @@ func TestNewPubSubShutdown(t *testing.T) {
 	assert.Equal(t, []int{0, 1}, subscribers[0].data)
 	assert.Equal(t, []int{0, 1, 2}, subscribers[1].data)
 }
+
+func TestRunExample(t *testing.T) {
+	ExamplePubSub()
+}
