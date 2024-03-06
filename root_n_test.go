@@ -23,7 +23,7 @@ func Test_root(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("root(%.2f,%d,%f) should be equal to %f", tt.x, tt.n, tt.accuracy, tt.expectedResult), func(t *testing.T) {
-			result := root(tt.x, float64(tt.n), tt.accuracy)
+			result := rootN(tt.x, float64(tt.n), tt.accuracy)
 			delta := math.Abs(tt.expectedResult - result)
 			fmt.Printf("root(%.2f, %d, %f) ~= %f should be %f -> delta: %f\n", tt.x, tt.n, tt.accuracy, result, tt.expectedResult, delta)
 			if delta > accuracy {

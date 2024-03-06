@@ -2,13 +2,13 @@ package goutils
 
 import "math"
 
-// Root - this function calculate approximation of n-th root of a number.
-func Root(x, n float64) float64 {
-	return root(x, n, 0.001)
+// RootN - this function calculate approximation of n-th root of a number.
+func RootN(x, n float64) float64 {
+	return rootN(x, n, 0.001)
 }
 
 // root - accuracyFactor = the lower number the lower error
-func root(x, n float64, accuracyFactor float64) float64 {
+func rootN(x, n float64, accuracyFactor float64) float64 {
 	if x == 0 {
 		return x
 	}
