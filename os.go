@@ -1,6 +1,7 @@
 package goutils
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -14,9 +15,17 @@ func ExitNow(code int, message string, messageArgs ...interface{}) {
 }
 
 // ExitOnError exit the program if error occur
-func ExitOnError(err error, code int, message string, messageArgs ...interface{}) {
+func ExitOnError(err error, code int) {
 	if err != nil {
-		ExitNow(code, message, messageArgs...)
+		ExitNow(code, "error: %s", err)
+	}
+}
+
+// ExitOnErrorWithMessage exit the program if error occur
+func ExitOnErrorWithMessage(err error, code int, message string, messageArgs ...interface{}) {
+	if err != nil {
+		msg := fmt.Sprintf(message, messageArgs) + ": " + err.Error()
+		ExitNow(code, msg)
 	}
 }
 
