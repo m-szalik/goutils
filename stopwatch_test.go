@@ -32,3 +32,23 @@ func Test_stopWatchWithMock(t *testing.T) {
 	assert.Equal(t, "0s", strBefore)
 	assert.Equal(t, "3.5s", strEnd)
 }
+
+func Test_stopWatchReset(t *testing.T) {
+	step0 := 3*time.Second + 500*time.Millisecond
+	step1 := 500 * time.Millisecond
+	step2 := 100 * time.Millisecond
+	tp := NewMockTimeProvider()
+	sw := NewStopWatchWithTimeProvider(tp)
+	before := sw.GetDuration()
+	sw.Start()
+	tp.Add(step0)
+	inTheMiddle := sw.GetDuration()
+	sw.Reset()
+	tp.Add(step1)
+	sw.Stop()
+	tp.Add(step2)
+	after := sw.GetDuration()
+	assert.Equal(t, time.Duration(0), before)
+	assert.Equal(t, step0, inTheMiddle)
+	assert.Equal(t, step1, after)
+}

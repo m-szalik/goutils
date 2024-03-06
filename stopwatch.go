@@ -8,8 +8,11 @@ import (
 
 // StopWatch - stopWatch utility
 type StopWatch interface {
+	// Start - start a stopWatch
 	Start() StopWatch
+	// Stop - stop a stop watch
 	Stop()
+	// Reset - reset the timer. If the timer was running it is still running after the reset.
 	Reset()
 	GetDuration() time.Duration
 }
@@ -42,7 +45,10 @@ func (s *stopWatch) Stop() {
 func (s *stopWatch) Reset() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	s.lastStart = nil
+	if s.lastStart != nil {
+		now := s.timeProvider.Now()
+		s.lastStart = &now
+	}
 	s.duration = time.Duration(0)
 }
 
@@ -67,10 +73,14 @@ func (s *stopWatch) durationCalculation() (time.Duration, bool) {
 	}
 }
 
+// NewStopWatch - create new StopWatch.
+// New instance is not started by default.
 func NewStopWatch() StopWatch {
 	return NewStopWatchWithTimeProvider(SystemTimeProvider())
 }
 
+// NewStopWatchWithTimeProvider - create new StopWatch.
+// New instance is not started by default.
 func NewStopWatchWithTimeProvider(timeProvider TimeProvider) StopWatch {
 	return &stopWatch{
 		timeProvider: timeProvider,
