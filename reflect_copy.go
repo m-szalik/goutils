@@ -4,14 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
+// AcceptFunc - function used by CopyStruct function.
 type AcceptFunc func(fieldPath string, srcValue reflect.Value) bool
 
-func CopyStructAll(src interface{}, dst interface{}) error {
-	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool { return true })
-}
-
+// CopyStruct - copy struct from src to dst. acceptFunc is a function that selects fields to be copied.
 func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 	if reflect.TypeOf(dst).Kind() != reflect.Pointer {
 		return fmt.Errorf("dst must be a pointer")
@@ -22,6 +21,38 @@ func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 		return fmt.Errorf("source and destination must be of the same type but %T and %T had been given", source, destination)
 	}
 	return copyValue(source, destination, "", acceptFunc)
+}
+
+// CopyStructAll - copy all struct fields from src to dst.
+func CopyStructAll(src interface{}, dst interface{}) error {
+	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool { return true })
+}
+
+// CopyStructSelected - copy selected fields from struct src to dst.
+func CopyStructSelected(src interface{}, dst interface{}, selectedFilePaths ...string) error {
+	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool {
+		if fieldPath == "" {
+			return true
+		}
+		for _, s := range selectedFilePaths {
+			if strings.Contains(fieldPath, s) {
+				return true
+			}
+		}
+		return false
+	})
+}
+
+// CopyStructAllExcept - copy selected fields from struct src to dst.
+func CopyStructAllExcept(src interface{}, dst interface{}, excludedFilePaths ...string) error {
+	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool {
+		for _, s := range excludedFilePaths {
+			if s == fieldPath {
+				return false
+			}
+		}
+		return true
+	})
 }
 
 func dereference(val interface{}) reflect.Value {
