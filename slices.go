@@ -48,3 +48,16 @@ func SliceMap[I interface{}, O interface{}](inputData []I, mapper func(I) O) []O
 	}
 	return outputData
 }
+
+// SlicesEq - check if two slices are equal
+func SlicesEq[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}

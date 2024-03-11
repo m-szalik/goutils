@@ -119,3 +119,22 @@ func TestSliceMapIntToString(t *testing.T) {
 	sliceOfStrings := SliceMap[int, string]([]int{2, 7, -11}, func(i int) string { return fmt.Sprint(i) })
 	assert.Equal(t, []string{"2", "7", "-11"}, sliceOfStrings)
 }
+
+func TestSlicesEq(t *testing.T) {
+	type testCase[T comparable] struct {
+		name string
+		a    []T
+		b    []T
+		want bool
+	}
+	tests := []testCase[string]{
+		{name: "not equal by size", a: []string{"a"}, b: []string{"a", "b"}, want: false},
+		{name: "not equal by content", a: []string{"a", "b"}, b: []string{"a", "z"}, want: false},
+		{name: "equal", a: []string{"a", "b"}, b: []string{"a", "b"}, want: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, SlicesEq(tt.a, tt.b), "SlicesEq(%v, %v)", tt.a, tt.b)
+		})
+	}
+}
