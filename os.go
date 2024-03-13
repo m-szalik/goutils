@@ -21,8 +21,8 @@ func ExitOnError(err error, code int) {
 	}
 }
 
-// ExitOnErrorWithMessage exit the program if error occur
-func ExitOnErrorWithMessage(err error, code int, message string, messageArgs ...interface{}) {
+// ExitOnErrorf exit the program if error occur
+func ExitOnErrorf(err error, code int, message string, messageArgs ...interface{}) {
 	if err != nil {
 		msg := fmt.Sprintf(message, messageArgs...) + ": " + err.Error()
 		ExitNow(code, msg)
