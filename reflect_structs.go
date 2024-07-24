@@ -15,8 +15,8 @@ func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 	if reflect.TypeOf(dst).Kind() != reflect.Pointer {
 		return fmt.Errorf("dst must be a pointer")
 	}
-	source := dereference(src)
-	destination := dereference(dst)
+	source := elemValue(src)
+	destination := elemValue(dst)
 	if source.Type() != destination.Type() {
 		return fmt.Errorf("source and destination must be of the same type but %T and %T had been given", source, destination)
 	}
@@ -55,7 +55,7 @@ func CopyStructAllExcept(src interface{}, dst interface{}, excludedFilePaths ...
 	})
 }
 
-func dereference(val interface{}) reflect.Value {
+func elemValue(val interface{}) reflect.Value {
 	v := reflect.ValueOf(val)
 	if v.Kind() == reflect.Pointer {
 		return v.Elem()
