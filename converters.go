@@ -50,7 +50,7 @@ func ParseBool(str string) (bool, error) {
 }
 
 // ParseValue - converts string to one of int64, flot64, string, bool, nil.
-// If impossible to covert the same string is returned.
+// If impossible to convert, the same string is returned.
 func ParseValue(str string) interface{} {
 	if b, err := ParseBool(str); err == nil {
 		return b
