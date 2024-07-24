@@ -1,6 +1,8 @@
 package goutils
 
 import (
+	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -94,4 +96,35 @@ func TestCopyStruct(t *testing.T) {
 		assert.Equal(t, 0, dst.Except)
 	})
 
+}
+
+func TestCmpWalkStructAreEqual(t *testing.T) {
+	type tStruc struct {
+		X     int
+		Array []string
+	}
+	tests := []struct {
+		name            string
+		a               interface{}
+		b               interface{}
+		noErrorExpected bool
+	}{
+		{name: "not equal numbers", a: tStruc{X: 12, Array: []string{}}, b: tStruc{X: 2, Array: []string{}}},
+		{name: "not equal array len", a: tStruc{X: 12, Array: []string{}}, b: tStruc{X: 12, Array: []string{"ax"}}},
+		{name: "not equal array nil", a: tStruc{X: 12, Array: []string{}}, b: tStruc{X: 12, Array: nil}},
+		{name: "equal", a: tStruc{X: 12, Array: []string{}}, b: tStruc{X: 12, Array: []string{}}, noErrorExpected: true},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("CmpWalkStructAreEqual-%s", tt.name), func(t *testing.T) {
+			err := CmpWalkStructAreEqual(tt.a, tt.b)
+			if tt.noErrorExpected {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+				var cmpErr CmpError
+				errors.As(err, &cmpErr)
+				fmt.Printf("  CMP %s --> A=%v, B=%v\n", cmpErr.Error(), cmpErr.A(), cmpErr.B())
+			}
+		})
+	}
 }
