@@ -2,7 +2,7 @@ package goutils
 
 // SliceIndexOf find an element in a slice
 // return index of the element in a slice or -1 if not found
-func SliceIndexOf(slice []interface{}, e interface{}) int {
+func SliceIndexOf[T comparable](slice []T, e T) int {
 	for i, a := range slice {
 		if a == e {
 			return i
@@ -12,7 +12,7 @@ func SliceIndexOf(slice []interface{}, e interface{}) int {
 }
 
 // SliceContains check if slice contains the element
-func SliceContains(slice []interface{}, e interface{}) bool {
+func SliceContains[T comparable](slice []T, e T) bool {
 	return SliceIndexOf(slice, e) >= 0
 }
 
@@ -38,7 +38,7 @@ func SliceRemove[T comparable](slice []T, e any) ([]T, int) {
 
 // SliceMap - map slice to slice of different object.
 // sliceOfStrings := SliceMap[int, string]([]int{2, 7, -11}, func(i int) string { return fmt.Sprint(i) })
-func SliceMap[I interface{}, O interface{}](inputData []I, mapper func(I) O) []O {
+func SliceMap[I any, O any](inputData []I, mapper func(I) O) []O {
 	if inputData == nil {
 		return nil
 	}
