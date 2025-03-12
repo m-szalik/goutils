@@ -65,9 +65,7 @@ func (c *simpleCollection[T]) AsSlice() []*T {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	ret := make([]*T, len(c.data))
-	for i, e := range c.data {
-		ret[i] = e
-	}
+	copy(ret, c.data)
 	return ret
 }
 

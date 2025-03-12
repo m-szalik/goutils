@@ -57,10 +57,7 @@ func TestCopyStruct(t *testing.T) {
 		err := CopyStruct(src, &dst, func(fieldPath string, srcValue reflect.Value) bool {
 			t.Logf("TestCopyStruct path '%s' --> %+v", fieldPath, srcValue)
 			keys = append(keys, fieldPath)
-			if fieldPath == ".Except" {
-				return false
-			}
-			return true
+			return fieldPath != ".Except"
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, src.Name, dst.Name)

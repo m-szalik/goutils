@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-var parseValueIntRegEx, _ = regexp.Compile("^-?\\d+$")
-var parseValueFloatRegEx, _ = regexp.Compile("^-?\\d+\\.\\d+$")
+var parseValueIntRegEx = regexp.MustCompile(`^-?\d+$`)
+var parseValueFloatRegEx = regexp.MustCompile(`^-?\d+\.\d+$`)
 
 // BoolToStr - return string for true or false bool value
 func BoolToStr(b bool, trueVal, falseVal string) string {

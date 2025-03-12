@@ -35,7 +35,7 @@ func (c *rollingCollection[T]) Remove(removeMeElements ...T) int {
 
 func (c *rollingCollection[T]) Add(values ...T) {
 	c.lock.Lock()
-	c.lock.Unlock()
+	defer c.lock.Unlock()
 	for _, v := range values {
 		if c.count >= cap(c.data) {
 			c.removeIndex(0)
