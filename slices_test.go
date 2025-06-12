@@ -138,3 +138,22 @@ func TestSlicesEq(t *testing.T) {
 		})
 	}
 }
+
+func TestDistrictValues(t *testing.T) {
+	type testCase[T comparable] struct {
+		name  string
+		input []T
+		want  []T
+	}
+	tests := []testCase[string]{
+		{name: "nil value", input: nil, want: nil},
+		{name: "empty slice", input: []string{}, want: []string{}},
+		{name: "all unique element", input: []string{"a", "b"}, want: []string{"a", "b"}},
+		{name: "some duplicates element", input: []string{"a", "b", "b", "c", "a"}, want: []string{"a", "b", "c"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, DistrictValues(tt.input), "DistrictValues(%v)", tt.input)
+		})
+	}
+}
