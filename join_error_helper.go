@@ -8,9 +8,14 @@ type JoinErrorHelper struct {
 }
 
 // Append append error
-func (jeh *JoinErrorHelper) Append(err error) {
-	if err != nil {
-		jeh.errs = append(jeh.errs, err)
+func (jeh *JoinErrorHelper) Append(errs ...error) {
+	if errs == nil {
+		return
+	}
+	for _, err := range errs {
+		if err != nil {
+			jeh.errs = append(jeh.errs, err)
+		}
 	}
 }
 
