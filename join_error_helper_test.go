@@ -37,7 +37,7 @@ func TestJoinErrorHelper(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			jeh := &JoinErrorHelper{}
+			jeh := NewJoinErrorHelper()
 			jeh.Append(tt.errors...)
 			asErr := jeh.AsError()
 			assert2.Equal(t, tt.expected, asErr)

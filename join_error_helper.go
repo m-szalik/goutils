@@ -30,3 +30,13 @@ func (jeh *JoinErrorHelper) AsError() error {
 		return errors.Join(jeh.errs...)
 	}
 }
+
+// NewJoinErrorHelper - create new JoinErrorHelper
+func NewJoinErrorHelper(errs ...error) *JoinErrorHelper {
+	if errs == nil {
+		errs = make([]error, 0)
+	}
+	return &JoinErrorHelper{
+		errs: errs,
+	}
+}
