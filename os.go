@@ -30,15 +30,75 @@ func ExitOnErrorf(err error, code int, message string, messageArgs ...interface{
 }
 
 // Env retrieves the value of the environment variable named by the key. If not defined then default value is returned.
-func Env(name string, def string) string {
+// Supported types: string,int,bool,float32,float64
+func Env[T string | int | bool | float32 | float64](name string, def T) T {
 	s := os.Getenv(name)
-	if s == "" {
+	if s == "" { // not set
 		return def
 	}
-	return s
+	v, err := envConvertion[T](s)
+	if err != nil {
+		return def
+	}
+	return *v
+}
+
+// EnvRequired retrieves the value of the environment variable named by the key. If not defined then panic.
+// Supported types: string,int,bool,float32,float64
+func EnvRequired[T string | int | bool | float32 | float64](name string) T {
+	val := os.Getenv(name)
+	if val == "" {
+		panic(fmt.Sprintf("enviroment variable %s not defined", name))
+	}
+	v, err := envConvertion[T](val)
+	if err != nil {
+		panic(fmt.Sprintf("cannot convert enviroment variable %s value '%s' :: %s", name, val, err))
+	}
+	return *v
+}
+
+func envConvertion[T string | int | bool | float32 | float64](value string) (*T, error) {
+	var zero T
+	switch any(zero).(type) {
+	case string:
+		v := any(value).(T)
+		return &v, nil
+	case int:
+		intVal, err := strconv.Atoi(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(intVal).(T)
+		return &v, nil
+	case bool:
+		b, err := ParseBool(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(b).(T)
+		return &v, nil
+	case float32:
+		f64, err := AsFloat64(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(float32(f64)).(T)
+		return &v, nil
+	case float64:
+		f64, err := AsFloat64(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(f64).(T)
+		return &v, nil
+	default:
+		// Shouldn’t happen given the constraint, but keep a safe fallback
+		return nil, fmt.Errorf("unsupported type %T has been passed", zero)
+	}
 }
 
 // EnvInt retrieves the value as int of the environment variable named by the key. If not defined then default value is returned.
+// Deprecated: use: [Env].
 func EnvInt(name string, def int) int {
 	s := os.Getenv(name)
 	if s == "" {
