@@ -1,5 +1,36 @@
 package goutils
 
+// AllMatch - check if all elements in the slice match the condition
+func AllMatch[T any](input []T, condition func(element T) bool) bool {
+	for _, element := range input {
+		if !condition(element) {
+			return false
+		}
+	}
+	return true
+}
+
+// AnyMatch - check if any element in the slice match the condition
+func AnyMatch[T any](input []T, condition func(element T) bool) bool {
+	for _, element := range input {
+		if condition(element) {
+			return true
+		}
+	}
+	return false
+}
+
+// CountMatch - count elements that matches the condition
+func CountMatch[T any](input []T, condition func(element T) bool) int {
+	counter := 0
+	for _, element := range input {
+		if condition(element) {
+			counter++
+		}
+	}
+	return counter
+}
+
 // SliceIndexOf find an element in a slice
 // return index of the element in a slice or -1 if not found
 func SliceIndexOf[T comparable](slice []T, e T) int {
@@ -76,4 +107,35 @@ func DistrictValues[T comparable](input []T) []T {
 		}
 	}
 	return ret
+}
+
+// SliceAllMatch - check if all elements in the slice match the condition
+func SliceAllMatch[T any](input []T, condition func(element T) bool) bool {
+	for _, element := range input {
+		if !condition(element) {
+			return false
+		}
+	}
+	return true
+}
+
+// SliceAnyMatch - check if any element in the slice match the condition
+func SliceAnyMatch[T any](input []T, condition func(element T) bool) bool {
+	for _, element := range input {
+		if condition(element) {
+			return true
+		}
+	}
+	return false
+}
+
+// SliceCountMatch - count elements that matches the condition
+func SliceCountMatch[T any](input []T, condition func(element T) bool) int {
+	counter := 0
+	for _, element := range input {
+		if condition(element) {
+			counter++
+		}
+	}
+	return counter
 }

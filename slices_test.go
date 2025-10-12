@@ -2,9 +2,10 @@ package goutils
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var sliceA = []interface{}{"A", "b", 11, 3.14}
@@ -154,6 +155,106 @@ func TestDistrictValues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.want, DistrictValues(tt.input), "DistrictValues(%v)", tt.input)
+		})
+	}
+}
+
+var allCapitalCasesMatch = func(s string) bool {
+	return strings.ToUpper(s) == s
+}
+
+func TestAllMatch(t *testing.T) {
+	type testCase[T any] struct {
+		name      string
+		input     []T
+		condition func(element T) bool
+		want      bool
+	}
+	tests := []testCase[string]{
+		{
+			name:      "all matches",
+			input:     []string{"JOHN", "ALEX"},
+			condition: allCapitalCasesMatch,
+			want:      true,
+		},
+		{
+			name:      "all matches for empty input",
+			input:     []string{},
+			condition: allCapitalCasesMatch,
+			want:      true,
+		},
+		{
+			name:      "not all matches",
+			input:     []string{"JOHN", "Rene", "FRANK"},
+			condition: allCapitalCasesMatch,
+			want:      false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, SliceAllMatch(tt.input, tt.condition), "SliceAllMatch(%v, %T)", tt.input, tt.condition)
+		})
+	}
+}
+
+func TestAnyMatch(t *testing.T) {
+	type testCase[T any] struct {
+		name      string
+		input     []T
+		condition func(element T) bool
+		want      bool
+	}
+	tests := []testCase[string]{
+		{
+			name:      "one matches",
+			input:     []string{"Frank", "ALEX", "Eric"},
+			condition: allCapitalCasesMatch,
+			want:      true,
+		},
+		{
+			name:      "empty input",
+			input:     []string{},
+			condition: allCapitalCasesMatch,
+			want:      false,
+		},
+		{
+			name:      "one all matches",
+			input:     []string{"John", "Rene", "FRANK"},
+			condition: allCapitalCasesMatch,
+			want:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, SliceAnyMatch(tt.input, tt.condition), "SliceAnyMatch(%v, %T)", tt.input, tt.condition)
+		})
+	}
+}
+
+func TestCountMatch(t *testing.T) {
+	type testCase[T any] struct {
+		name      string
+		input     []T
+		condition func(element T) bool
+		want      int
+	}
+	tests := []testCase[string]{
+		{
+			name:      "one matches",
+			input:     []string{"Frank", "ALEX", "Eric"},
+			condition: allCapitalCasesMatch,
+			want:      1,
+		},
+		{
+			name:      "empty input",
+			input:     []string{},
+			condition: allCapitalCasesMatch,
+			want:      0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, SliceCountMatch(tt.input, tt.condition), "SliceCountMatch(%v, %T)", tt.input, tt.condition)
 		})
 	}
 }
