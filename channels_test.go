@@ -19,6 +19,6 @@ func TestSafeSend(t *testing.T) {
 		ch := make(chan string, 1)
 		close(ch)
 		err := SafeSend(ch, "hello")
-		assert.ErrorIs(t, err, SafeSendChannelClosedError)
+		assert.ErrorIs(t, err, ErrSafeSendChannelClosed)
 	})
 }

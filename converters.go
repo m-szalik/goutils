@@ -27,8 +27,8 @@ func BoolTo[T interface{}](b bool, trueVal, falseVal T) T {
 
 // HexToInt convert hex representation to int
 func HexToInt(hex string) (int, error) {
-	hex = strings.Replace(hex, "0x", "", -1)
-	hex = strings.Replace(hex, "0X", "", -1)
+	hex = strings.Replace(hex, "0x", "", -1) //nolint:staticcheck
+	hex = strings.Replace(hex, "0X", "", -1) //nolint:staticcheck
 	i, err := strconv.ParseInt(hex, 16, 32)
 	if err != nil {
 		return 0, err
