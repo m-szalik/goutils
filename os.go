@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 var logger = log.New(os.Stderr, "", 0)
@@ -50,8 +51,8 @@ func ExitOnErrorf(err error, code int, message string, messageArgs ...interface{
 }
 
 // Env retrieves the value of the environment variable named by the key. If not defined then default value is returned.
-// Supported types: string,int,bool,float32,float64
-func Env[T string | int | bool | float32 | float64](name string, def T) T {
+// Supported types: string,int,bool,float32,float64,time.Duration
+func Env[T string | int | bool | float32 | float64 | time.Duration](name string, def T) T {
 	s := os.Getenv(name)
 	if s == "" { // not set
 		return def
@@ -64,8 +65,8 @@ func Env[T string | int | bool | float32 | float64](name string, def T) T {
 }
 
 // EnvRequired retrieves the value of the environment variable named by the key. If not defined then panic.
-// Supported types: string,int,bool,float32,float64
-func EnvRequired[T string | int | bool | float32 | float64](name string) T {
+// Supported types: string,int,bool,float32,float64,time.Duration
+func EnvRequired[T string | int | bool | float32 | float64 | time.Duration](name string) T {
 	val := os.Getenv(name)
 	if val == "" {
 		panic(fmt.Sprintf("enviroment variable %s not defined", name))
@@ -77,7 +78,7 @@ func EnvRequired[T string | int | bool | float32 | float64](name string) T {
 	return *v
 }
 
-func envConvertion[T string | int | bool | float32 | float64](value string) (*T, error) {
+func envConvertion[T string | int | bool | float32 | float64 | time.Duration](value string) (*T, error) {
 	var zero T
 	switch any(zero).(type) {
 	case string:
@@ -110,6 +111,13 @@ func envConvertion[T string | int | bool | float32 | float64](value string) (*T,
 			return nil, err
 		}
 		v := any(f64).(T)
+		return &v, nil
+	case time.Duration:
+		dur, err := time.ParseDuration(value)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse duration '%s':: %w", value, err)
+		}
+		v := any(dur).(T)
 		return &v, nil
 	default:
 		// Shouldn’t happen given the constraint, but keep a safe fallback
