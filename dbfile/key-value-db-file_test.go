@@ -2,11 +2,12 @@ package dbfile
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"os"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func withKeyValueDBFile(t *testing.T, f func(t *testing.T, db KeyValueDBFile)) {
@@ -14,7 +15,7 @@ func withKeyValueDBFile(t *testing.T, f func(t *testing.T, db KeyValueDBFile)) {
 	db, err := NewKeyValueDBFile(fn)
 	assert.NoError(t, err)
 	f(t, db)
-	err = os.Remove(fn)
+	_ = os.Remove(fn)
 	t.Cleanup(func() {
 		_ = os.Remove(fn)
 	})

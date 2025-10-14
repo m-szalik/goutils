@@ -94,7 +94,7 @@ func SlicesEq[T comparable](a, b []T) bool {
 }
 
 func DistrictValues[T comparable](input []T) []T {
-	if input == nil || len(input) < 2 {
+	if len(input) < 2 {
 		return input
 	}
 	found := make(map[T]bool)

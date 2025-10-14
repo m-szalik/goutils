@@ -13,8 +13,8 @@ func NewMinStable[E comparable](ctx context.Context, ignoreDuration time.Duratio
 	go func() {
 		defer close(t.input)
 		defer close(t.output)
-		var lastReported E = initValue
-		var lastInput E = initValue
+		var lastReported = initValue
+		var lastInput = initValue
 		ticker := time.NewTicker(ignoreDuration)
 		ticker.Stop()
 		defer ticker.Stop()

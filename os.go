@@ -13,7 +13,7 @@ var logger = log.New(os.Stderr, "", 0)
 // It supports `/dev/termination-log' file.
 func ExitNow(code int, message string, messageArgs ...interface{}) {
 	fullMessage := fmt.Sprintf(message, messageArgs...)
-	logger.Printf(fullMessage)
+	logger.Print(fullMessage)
 	terminationFilename := Env("TERMINATION_MESSAGE_PATH", "/dev/termination-log")
 	if terminationFilename != "" {
 		_, err := os.Stat(terminationFilename)

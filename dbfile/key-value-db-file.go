@@ -42,7 +42,7 @@ func (k *keyFile) Keys() []string {
 	defer k.lock.Unlock()
 	keys := make([]string, len(k.data))
 	i := 0
-	for ek, _ := range k.data {
+	for ek := range k.data {
 		keys[i] = ek
 		i++
 	}
