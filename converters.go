@@ -3,6 +3,7 @@ package goutils
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -82,9 +83,16 @@ func ParseValue(str string) interface{} {
 }
 
 // AsFloat64 - convert multiple types (float32,int,int32,int64,string,[]byte) to float64
-func AsFloat64(i interface{}) (float64, error) {
-	if i == nil {
+func AsFloat64(input any) (float64, error) {
+	if input == nil {
 		return 0, fmt.Errorf("cannot convert nil to float64")
+	}
+	var i any
+	rv := reflect.ValueOf(input)
+	if rv.Kind() == reflect.Ptr {
+		i = rv.Elem().Interface()
+	} else {
+		i = input
 	}
 	switch v := i.(type) {
 	case float32:

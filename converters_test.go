@@ -2,9 +2,10 @@ package goutils
 
 import (
 	"fmt"
-	assert2 "github.com/stretchr/testify/assert"
 	"math"
 	"testing"
+
+	assert2 "github.com/stretchr/testify/assert"
 )
 
 func Test_ParseValue(t *testing.T) {
@@ -125,8 +126,9 @@ func Test_ParseBool(t *testing.T) {
 }
 
 func TestAsFloat64(t *testing.T) {
+	vi32 := int32(17)
 	tests := []struct {
-		arg     interface{}
+		arg     any
 		want    float64
 		wantErr bool
 	}{
@@ -138,6 +140,7 @@ func TestAsFloat64(t *testing.T) {
 		{float32(17), 17, false},
 		{int64(17), 17, false},
 		{int32(17), 17, false},
+		{&vi32, 17, false},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("converting %v of type %T", tt.arg, tt.arg), func(t *testing.T) {
