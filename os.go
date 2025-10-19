@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"time"
 )
 
 var logger = log.New(os.Stderr, "", 0)
@@ -48,93 +46,4 @@ func ExitOnErrorf(err error, code int, message string, messageArgs ...interface{
 		msg := fmt.Sprintf(message, messageArgs...) + ":: " + err.Error()
 		ExitNow(code, msg)
 	}
-}
-
-// Env retrieves the value of the environment variable named by the key. If not defined then default value is returned.
-// Supported types: string,int,bool,float32,float64,time.Duration
-func Env[T string | int | bool | float32 | float64 | time.Duration](name string, def T) T {
-	s := os.Getenv(name)
-	if s == "" { // not set
-		return def
-	}
-	v, err := envConvertion[T](s)
-	if err != nil {
-		return def
-	}
-	return *v
-}
-
-// EnvRequired retrieves the value of the environment variable named by the key. If not defined then panic.
-// Supported types: string,int,bool,float32,float64,time.Duration
-func EnvRequired[T string | int | bool | float32 | float64 | time.Duration](name string) T {
-	val := os.Getenv(name)
-	if val == "" {
-		panic(fmt.Sprintf("enviroment variable %s not defined", name))
-	}
-	v, err := envConvertion[T](val)
-	if err != nil {
-		panic(fmt.Sprintf("cannot convert enviroment variable %s value '%s' :: %s", name, val, err))
-	}
-	return *v
-}
-
-func envConvertion[T string | int | bool | float32 | float64 | time.Duration](value string) (*T, error) {
-	var zero T
-	switch any(zero).(type) {
-	case string:
-		v := any(value).(T)
-		return &v, nil
-	case int:
-		intVal, err := strconv.Atoi(value)
-		if err != nil {
-			return nil, err
-		}
-		v := any(intVal).(T)
-		return &v, nil
-	case bool:
-		b, err := ParseBool(value)
-		if err != nil {
-			return nil, err
-		}
-		v := any(b).(T)
-		return &v, nil
-	case float32:
-		f64, err := AsFloat64(value)
-		if err != nil {
-			return nil, err
-		}
-		v := any(float32(f64)).(T)
-		return &v, nil
-	case float64:
-		f64, err := AsFloat64(value)
-		if err != nil {
-			return nil, err
-		}
-		v := any(f64).(T)
-		return &v, nil
-	case time.Duration:
-		dur, err := time.ParseDuration(value)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse duration '%s':: %w", value, err)
-		}
-		v := any(dur).(T)
-		return &v, nil
-	default:
-		// Shouldn’t happen given the constraint, but keep a safe fallback
-		return nil, fmt.Errorf("unsupported type %T has been passed", zero)
-	}
-}
-
-// EnvInt retrieves the value as int of the environment variable named by the key. If not defined then default value is returned.
-// Deprecated: use: [Env].
-func EnvInt(name string, def int) int {
-	s := os.Getenv(name)
-	if s == "" {
-		return def
-	}
-	v, err := strconv.Atoi(s)
-	if err != nil {
-		return def
-	}
-	return v
 }

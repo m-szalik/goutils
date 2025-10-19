@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var parseValueIntRegEx = regexp.MustCompile(`^-?\d+$`)
@@ -126,4 +127,51 @@ func AsFloat64(input any) (float64, error) {
 func RoundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
+}
+
+func envConvertion[T string | int | bool | float32 | float64 | time.Duration](value string) (*T, error) {
+	var zero T
+	switch any(zero).(type) {
+	case string:
+		v := any(value).(T)
+		return &v, nil
+	case int:
+		intVal, err := strconv.Atoi(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(intVal).(T)
+		return &v, nil
+	case bool:
+		b, err := ParseBool(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(b).(T)
+		return &v, nil
+	case float32:
+		f64, err := AsFloat64(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(float32(f64)).(T)
+		return &v, nil
+	case float64:
+		f64, err := AsFloat64(value)
+		if err != nil {
+			return nil, err
+		}
+		v := any(f64).(T)
+		return &v, nil
+	case time.Duration:
+		dur, err := time.ParseDuration(value)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse duration '%s':: %w", value, err)
+		}
+		v := any(dur).(T)
+		return &v, nil
+	default:
+		// Shouldn’t happen given the constraint, but keep a safe fallback
+		return nil, fmt.Errorf("unsupported type %T has been passed", zero)
+	}
 }
