@@ -1,17 +1,14 @@
 package collector
 
-import (
-	"sync"
-)
+type Set[T any] interface {
+	Collection[T]
+}
 
-type threadSafeSet[T comparable] struct {
-	lock sync.Mutex
+type setImpl[T comparable] struct {
 	data map[T]struct{}
 }
 
-func (s *threadSafeSet[T]) AsSlice() []*T {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+func (s *setImpl[T]) AsSlice() []*T {
 	ret := make([]*T, len(s.data))
 	i := 0
 	for k := range s.data {
@@ -21,13 +18,11 @@ func (s *threadSafeSet[T]) AsSlice() []*T {
 	return ret
 }
 
-func (s *threadSafeSet[T]) Length() int {
+func (s *setImpl[T]) Length() int {
 	return len(s.data)
 }
 
-func (s *threadSafeSet[T]) Remove(elements ...T) int {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+func (s *setImpl[T]) Remove(elements ...T) int {
 	changed := 0
 	for _, e := range elements {
 		if s.contains(e) {
@@ -38,9 +33,7 @@ func (s *threadSafeSet[T]) Remove(elements ...T) int {
 	return changed
 }
 
-func (s *threadSafeSet[T]) Add(elements ...T) int {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+func (s *setImpl[T]) Add(elements ...T) int {
 	changed := 0
 	for _, e := range elements {
 		if !s.contains(e) {
@@ -51,16 +44,17 @@ func (s *threadSafeSet[T]) Add(elements ...T) int {
 	return changed
 }
 
-func (s *threadSafeSet[T]) contains(element T) bool {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+func (s *setImpl[T]) Contains(element T) bool {
+	return s.contains(element)
+}
+
+func (s *setImpl[T]) contains(element T) bool {
 	_, ok := s.data[element]
 	return ok
 }
 
-func NewThreadSafeSet[T comparable]() Collection[T] {
-	return &threadSafeSet[T]{
-		lock: sync.Mutex{},
+func NewSet[T comparable]() Set[T] {
+	return &setImpl[T]{
 		data: make(map[T]struct{}),
 	}
 }

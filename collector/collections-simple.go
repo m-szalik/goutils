@@ -70,6 +70,18 @@ func (c *simpleCollection[T]) AsSlice() []*T {
 	return ret
 }
 
+func (c *simpleCollection[T]) Contains(element T) bool {
+	for _, e := range c.data {
+		if e == nil {
+			continue
+		}
+		if *e == element {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *simpleCollection[T]) String() string {
 	strs := make([]string, len(c.data))
 	func() {

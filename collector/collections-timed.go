@@ -77,6 +77,18 @@ func (c *timedCollection[T]) AsSlice() []*T {
 	return data
 }
 
+func (c *timedCollection[T]) Contains(element T) bool {
+	for _, e := range c.data {
+		if e == nil {
+			continue
+		}
+		if e.element == element {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *timedCollection[T]) cleanup() int {
 	now := c.timeProvider.Now()
 	count := 0

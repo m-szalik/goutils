@@ -59,6 +59,18 @@ func (c *rollingCollection[T]) Get(index int) *T {
 	return c.data[index]
 }
 
+func (c *rollingCollection[T]) Contains(element T) bool {
+	for _, e := range c.data {
+		if e == nil {
+			continue
+		}
+		if *e == element {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *rollingCollection[T]) AsSlice() []*T {
 	return c.data[0:c.count]
 }
