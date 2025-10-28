@@ -1,5 +1,16 @@
 package goutils
 
+// Filter - filter slice
+func Filter[T any](input []T, condition func(element T) bool) []T {
+	ret := make([]T, 0)
+	for _, element := range input {
+		if condition(element) {
+			ret = append(ret, element)
+		}
+	}
+	return ret
+}
+
 // AllMatch - check if all elements in the slice match the condition
 func AllMatch[T any](input []T, condition func(element T) bool) bool {
 	for _, element := range input {
