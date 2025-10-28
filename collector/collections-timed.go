@@ -1,9 +1,10 @@
 package collector
 
 import (
-	"github.com/m-szalik/goutils"
 	"sync"
 	"time"
+
+	"github.com/m-szalik/goutils"
 )
 
 type timedWrapper[T comparable] struct {
@@ -35,7 +36,7 @@ func (c *timedCollection[T]) Remove(removeMeElements ...T) int {
 	return removals
 }
 
-func (c *timedCollection[T]) Add(values ...T) {
+func (c *timedCollection[T]) Add(values ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	for _, value := range values {
@@ -50,6 +51,7 @@ func (c *timedCollection[T]) Add(values ...T) {
 		}
 	}
 	c.count++
+	return len(values)
 }
 
 func (c *timedCollection[T]) Length() int {

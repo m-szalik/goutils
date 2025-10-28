@@ -38,12 +38,13 @@ func (c *simpleCollection[T]) Remove(removeMeElements ...T) int {
 	return removals
 }
 
-func (c *simpleCollection[T]) Add(elements ...T) {
+func (c *simpleCollection[T]) Add(elements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	for _, elem := range elements {
 		c.data = append(c.data, &elem)
 	}
+	return len(elements)
 }
 
 func (c *simpleCollection[T]) Length() int {

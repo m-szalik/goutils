@@ -33,16 +33,19 @@ func (c *rollingCollection[T]) Remove(removeMeElements ...T) int {
 	return removals
 }
 
-func (c *rollingCollection[T]) Add(values ...T) {
+func (c *rollingCollection[T]) Add(values ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	added := 0
 	for _, v := range values {
 		if c.count >= cap(c.data) {
 			c.removeIndex(0)
 		}
 		c.data[c.count] = &v
 		c.count++
+		added++
 	}
+	return added
 }
 
 func (c *rollingCollection[T]) Length() int {

@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-type Stack[T interface{}] interface {
+type Stack[T any] interface {
 	Push(elements ...*T)
 	Pop() *T
 	AsSlice() []*T
