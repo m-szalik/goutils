@@ -1,5 +1,15 @@
 package goutils
 
+// FindFirst - find first element that matches condition if none then nil
+func FindFirst[T any](input []T, condition func(element T) bool) *T {
+	for _, element := range input {
+		if condition(element) {
+			return &element
+		}
+	}
+	return nil
+}
+
 // Filter - filter slice
 func Filter[T any](input []T, condition func(element T) bool) []T {
 	ret := make([]T, 0)
