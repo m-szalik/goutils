@@ -258,3 +258,67 @@ func TestCountMatch(t *testing.T) {
 		})
 	}
 }
+
+func TestFindFirst(t *testing.T) {
+	isEven := func(i int) bool { return i%2 == 0 }
+	// found
+	in1 := []int{1, 3, 4, 6}
+	ptr := FindFirst(in1, isEven)
+	if assert.NotNil(t, ptr, "expected non-nil pointer when a match exists") && ptr != nil {
+		assert.Equal(t, 4, *ptr)
+	}
+
+	// not found
+	in2 := []int{1, 3, 5}
+	assert.Nil(t, FindFirst(in2, isEven))
+
+	// empty input
+	var in3 []int
+	assert.Nil(t, FindFirst(in3, isEven))
+}
+
+func TestFilter(t *testing.T) {
+	isUpper := func(s string) bool { return strings.ToUpper(s) == s }
+
+	// typical filtering
+	in1 := []string{"JOHN", "Alex", "MIKE", "rene"}
+	out1 := Filter(in1, isUpper)
+	assert.Equal(t, []string{"JOHN", "MIKE"}, out1)
+
+	// empty slice -> empty slice
+	in2 := []string{}
+	out2 := Filter(in2, isUpper)
+	assert.Equal(t, 0, len(out2))
+	assert.NotNil(t, out2)
+
+	// nil slice -> empty slice (not nil)
+	var in3 []string
+	out3 := Filter(in3, isUpper)
+	assert.Equal(t, 0, len(out3))
+	assert.NotNil(t, out3)
+}
+
+func TestAllMatch_Function(t *testing.T) {
+	allCaps := func(s string) bool { return strings.ToUpper(s) == s }
+
+	assert.True(t, AllMatch([]string{"JOHN", "ALEX"}, allCaps))
+	assert.True(t, AllMatch([]string{}, allCaps)) // vacuously true
+	assert.False(t, AllMatch([]string{"JOHN", "Rene", "FRANK"}, allCaps))
+}
+
+func TestAnyMatch_Function(t *testing.T) {
+	allCaps := func(s string) bool { return strings.ToUpper(s) == s }
+
+	assert.True(t, AnyMatch([]string{"Frank", "ALEX", "Eric"}, allCaps))
+	assert.False(t, AnyMatch([]string{}, allCaps))
+	assert.True(t, AnyMatch([]string{"John", "Rene", "FRANK"}, allCaps))
+	assert.False(t, AnyMatch([]string{"john", "rene"}, allCaps))
+}
+
+func TestCountMatch_Function(t *testing.T) {
+	ge5 := func(i int) bool { return i >= 5 }
+
+	assert.Equal(t, 3, CountMatch([]int{1, 5, 7, 3, 9}, ge5))
+	assert.Equal(t, 0, CountMatch([]int{1, 2, 3}, ge5))
+	assert.Equal(t, 0, CountMatch([]int{}, ge5))
+}
