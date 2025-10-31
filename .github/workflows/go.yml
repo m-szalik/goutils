@@ -33,15 +33,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: '1.21'
 
     - name: Build
       run: go build -v ./...
+
+  code-coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
 
     - name: Test and generate coverage
       run: |
@@ -51,9 +64,41 @@ jobs:
 
     - name: Upload coverage artifacts
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: go-coverage
         path: |
           coverage.out
           coverage.txt
           coverage.html
+        if-no-files-found: ignore
+        retention-days: 30
+
+    - name: Extract total coverage
+      id: coverage
+      if: success()
+      run: |
+        total=$(go tool cover -func=coverage.out | awk '/total:/ {print $3}')
+        echo "total=$total" >> "$GITHUB_OUTPUT"
+
+    - name: Set GitHub status (success)
+      if: success()
+      uses: guibranco/github-status-action-v2@v1.1.13
+      with:
+        authToken: ${{ secrets.GITHUB_TOKEN }}
+        context: code-coverage
+        state: success
+        description: Coverage ${{ steps.coverage.outputs.total }}
+        sha: ${{ github.sha }}
+        target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    - name: Set GitHub status (failure)
+      if: failure()
+      uses: guibranco/github-status-action-v2@v1.1.13
+      with:
+        authToken: ${{ secrets.GITHUB_TOKEN }}
+        context: code-coverage
+        state: failure
+        description: Tests failed, coverage unavailable
+        sha: ${{ github.sha }}
+        target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
