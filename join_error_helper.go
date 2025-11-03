@@ -8,15 +8,16 @@ type JoinErrorHelper struct {
 }
 
 // Append append error
-func (jeh *JoinErrorHelper) Append(errs ...error) {
+func (jeh *JoinErrorHelper) Append(errs ...error) *JoinErrorHelper {
 	if errs == nil {
-		return
+		return jeh
 	}
 	for _, err := range errs {
 		if err != nil {
 			jeh.errs = append(jeh.errs, err)
 		}
 	}
+	return jeh
 }
 
 // AsError - return nil if no error, single error if one error was appended, JoinError otherwise
