@@ -7,6 +7,11 @@ type JoinErrorHelper struct {
 	errs []error
 }
 
+// ErrorsCount amount of error
+func (jeh *JoinErrorHelper) ErrorsCount() int {
+	return len(jeh.errs)
+}
+
 // Append append error
 func (jeh *JoinErrorHelper) Append(errs ...error) *JoinErrorHelper {
 	if errs == nil {
