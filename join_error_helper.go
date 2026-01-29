@@ -37,6 +37,17 @@ func (jeh *JoinErrorHelper) AsError() error {
 	}
 }
 
+func (jeh *JoinErrorHelper) Iterate() <-chan error {
+	ch := make(chan error)
+	go func() {
+		defer close(ch)
+		for _, err := range jeh.errs {
+			ch <- err
+		}
+	}()
+	return ch
+}
+
 // NewJoinErrorHelper - create new JoinErrorHelper
 func NewJoinErrorHelper(errs ...error) *JoinErrorHelper {
 	if errs == nil {
