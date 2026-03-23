@@ -2,7 +2,7 @@ package goutils
 
 import "io"
 
-// CloseQuietly close quietly. Ignore an error.
+// CloseQuietly closes closer and ignores any returned error.
 func CloseQuietly(closer io.Closer) {
 	if closer != nil {
 		_ = closer.Close()

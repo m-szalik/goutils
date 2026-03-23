@@ -115,7 +115,8 @@ func newTimedCollectionWithTimeProvider[T comparable](maxElements int, duration 
 	}
 }
 
-// NewTimedCollection collection that keeps elements for defined duration only
+// NewTimedCollection returns a collection that keeps at most maxElements values
+// and drops entries older than duration.
 func NewTimedCollection[T comparable](maxElements int, duration time.Duration) Collection[T] {
 	return newTimedCollectionWithTimeProvider[T](maxElements, duration, goutils.SystemTimeProvider())
 }

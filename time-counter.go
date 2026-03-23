@@ -5,8 +5,7 @@ import (
 	"time"
 )
 
-// TODO documentation
-
+// TimeCounter measures cumulative elapsed time between Start and Stop calls.
 type TimeCounter struct {
 	timeProvider TimeProvider
 	sessionStart *time.Time
@@ -14,6 +13,8 @@ type TimeCounter struct {
 	lock         sync.Mutex
 }
 
+// Reset returns the current elapsed duration and resets it to zero.
+// If the counter is running, it continues running from the reset point.
 func (d *TimeCounter) Reset() time.Duration {
 	now := d.timeProvider.Now()
 	if d.sessionStart != nil {
@@ -25,6 +26,7 @@ func (d *TimeCounter) Reset() time.Duration {
 	return dur
 }
 
+// Value returns current elapsed duration including the active session.
 func (d *TimeCounter) Value() time.Duration {
 	d.lock.Lock()
 	defer d.lock.Unlock()
@@ -36,6 +38,7 @@ func (d *TimeCounter) Value() time.Duration {
 	return dur
 }
 
+// Start starts measuring time when it is not already running.
 func (d *TimeCounter) Start() {
 	if d.sessionStart == nil {
 		d.lock.Lock()
@@ -45,6 +48,7 @@ func (d *TimeCounter) Start() {
 	}
 }
 
+// Stop stops measuring time and accumulates the elapsed session.
 func (d *TimeCounter) Stop() {
 	if d.sessionStart != nil {
 		d.lock.Lock()
@@ -62,6 +66,7 @@ func newTimeCounterInternal(tp TimeProvider) *TimeCounter {
 	return tc
 }
 
+// NewTimeCounter creates a new stopped counter using system time.
 func NewTimeCounter() *TimeCounter {
 	return newTimeCounterInternal(SystemTimeProvider())
 }

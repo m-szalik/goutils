@@ -6,11 +6,15 @@ import (
 	"sync"
 )
 
-// KeyValueDBFile - in file database
+// KeyValueDBFile is a key-value store persisted in a single file.
 type KeyValueDBFile interface {
+	// Put stores val under key and persists the change.
 	Put(key string, val []byte) error
+	// Remove deletes key and persists the change.
 	Remove(key string) error
+	// Keys returns currently stored keys.
 	Keys() []string
+	// Get returns value for key, or nil when key does not exist.
 	Get(key string) []byte
 }
 
@@ -77,7 +81,7 @@ func (k *keyFile) load() error {
 	return nil
 }
 
-// NewKeyValueDBFile - create new in file database
+// NewKeyValueDBFile opens or creates a file-backed key-value store.
 func NewKeyValueDBFile(file string) (KeyValueDBFile, error) {
 	kf := &keyFile{
 		data: make(map[string][]byte),

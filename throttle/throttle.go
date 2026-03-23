@@ -1,7 +1,11 @@
 package throttle
 
+// Throttler forwards events from input to output according to a throttling
+// strategy.
 type Throttler[E any] interface {
+	// Input returns channel used to submit events.
 	Input() chan<- E
+	// Output returns channel that emits throttled events.
 	Output() <-chan E
 }
 

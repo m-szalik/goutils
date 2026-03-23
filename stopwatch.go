@@ -6,14 +6,15 @@ import (
 	"time"
 )
 
-// StopWatch - stopWatch utility
+// StopWatch measures elapsed time across start/stop sessions.
 type StopWatch interface {
-	// Start - start a stopWatch
+	// Start starts or restarts measurement and returns the same StopWatch.
 	Start() StopWatch
-	// Stop - stop a stop watch
+	// Stop ends the current measurement session.
 	Stop()
-	// Reset - reset the timer. If the timer was running it is still running after the reset.
+	// Reset resets accumulated duration while preserving running state.
 	Reset()
+	// GetDuration returns total measured duration.
 	GetDuration() time.Duration
 }
 
@@ -73,14 +74,14 @@ func (s *stopWatch) durationCalculation() (time.Duration, bool) {
 	}
 }
 
-// NewStopWatch - create new StopWatch.
-// New instance is not started by default.
+// NewStopWatch creates a new StopWatch using system time.
+// The returned instance is not started.
 func NewStopWatch() StopWatch {
 	return NewStopWatchWithTimeProvider(SystemTimeProvider())
 }
 
-// NewStopWatchWithTimeProvider - create new StopWatch.
-// New instance is not started by default.
+// NewStopWatchWithTimeProvider creates a new StopWatch using timeProvider.
+// The returned instance is not started.
 func NewStopWatchWithTimeProvider(timeProvider TimeProvider) StopWatch {
 	return &stopWatch{
 		timeProvider: timeProvider,

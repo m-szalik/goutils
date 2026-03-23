@@ -75,7 +75,8 @@ func (c *rollingCollection[T]) AsSlice() []*T {
 	return c.data[0:c.count]
 }
 
-// NewRollingCollection - collection that keeps maxElements only - the oldest elements are removed automatically
+// NewRollingCollection returns a fixed-size collection that keeps at most
+// maxElements newest values.
 func NewRollingCollection[T comparable](maxElements int) Collection[T] {
 	return &rollingCollection[T]{
 		lock:  sync.Mutex{},

@@ -5,19 +5,13 @@ import (
 	"reflect"
 )
 
-// IteratorCallback
-// Parameters:
-//
-//	path position as string;
-//	depth element depth in the structure;
-//	kind - kind of the element;
-//	element - item tp iterate over;
-//
-// return false if stop iterating
+// IteratorCallback is called by IterateDeep for every leaf value.
+// Return false to stop traversal early.
 type IteratorCallback func(path string, depth int, kind reflect.Kind, element interface{}) bool
 
-// IterateDeep - iterate over the structure element. For each element callback function is called.
-// All pointers are passed into the callback as value.
+// IterateDeep walks nested structs, maps, slices, arrays, and pointers and calls
+// callback for each non-container value. Pointer values are dereferenced before
+// callback execution.
 func IterateDeep(element interface{}, callback IteratorCallback) {
 	iterateDeep(".", 0, reflect.ValueOf(element), callback)
 }

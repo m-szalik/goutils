@@ -5,8 +5,11 @@ import (
 	"sync"
 )
 
+// PubSub provides a fan-out message stream with dynamic subscribers.
 type PubSub[E interface{}] interface {
+	// NewPublisher returns a channel used to publish events.
 	NewPublisher() chan<- E
+	// NewSubscriber returns a channel that receives published events until ctx is done.
 	NewSubscriber(ctx context.Context) <-chan E
 }
 
@@ -71,7 +74,8 @@ func (p *pubSubImpl[E]) push(e E) {
 	}
 }
 
-// NewPubSub - create new Publisher-Subscribers pair
+// NewPubSub creates a PubSub bound to ctx.
+// Canceling ctx closes publishers and subscribers.
 func NewPubSub[E interface{}](ctx context.Context) PubSub[E] {
 	pubCh := make(chan E)
 	subs := make([]chan E, 0)

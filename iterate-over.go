@@ -5,7 +5,8 @@ import (
 	"fmt"
 )
 
-// IterateOver iterate over slice until the end or until context exited.
+// IterateOver calls callback for each element until processing finishes, callback
+// returns an error, or ctx is canceled.
 func IterateOver[T any](ctx context.Context, elements []T, callback func(index int, element T) error) error {
 	for index, e := range elements {
 		select {

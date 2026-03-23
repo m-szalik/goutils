@@ -2,7 +2,7 @@ package goutils
 
 import "math"
 
-// RootN - this function calculate approximation of n-th root of a number.
+// RootN returns an approximation of the n-th root of x.
 func RootN(x, n float64) float64 {
 	return rootN(x, n, 0.001)
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// ExamplePubSub shows basic publish/subscribe usage.
 func ExamplePubSub() {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()

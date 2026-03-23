@@ -8,8 +8,9 @@ import (
 
 var logger = log.New(os.Stderr, "", 0)
 
-// ExitNow exit now
-// It supports `/dev/termination-log' file.
+// ExitNow logs the formatted message and terminates the process with code.
+// When TERMINATION_MESSAGE_PATH points to an existing file, the message is
+// appended there as well.
 func ExitNow(code int, message string, messageArgs ...interface{}) {
 	fullMessage := fmt.Sprintf(message, messageArgs...)
 	logger.Print(fullMessage)
@@ -33,14 +34,14 @@ func ExitNow(code int, message string, messageArgs ...interface{}) {
 	os.Exit(code)
 }
 
-// ExitOnError exit the program if error occur
+// ExitOnError calls ExitNow when err is not nil.
 func ExitOnError(err error, code int) {
 	if err != nil {
 		ExitNow(code, "error:: %s", err)
 	}
 }
 
-// ExitOnErrorf exit the program if error occur
+// ExitOnErrorf calls ExitNow with a formatted message when err is not nil.
 func ExitOnErrorf(err error, code int, message string, messageArgs ...interface{}) {
 	if err != nil {
 		msg := fmt.Sprintf(message, messageArgs...) + ":: " + err.Error()

@@ -4,11 +4,17 @@ import (
 	"sync"
 )
 
+// Stack is a LIFO collection of pointers.
 type Stack[T any] interface {
+	// Push appends elements to the top of the stack.
 	Push(elements ...*T)
+	// Pop removes and returns the top element, or nil when empty.
 	Pop() *T
+	// AsSlice returns stack contents from bottom to top.
 	AsSlice() []*T
+	// Get returns element at index, or nil when out of bounds.
 	Get(index int) *T
+	// Length returns current stack size.
 	Length() int
 }
 
@@ -55,6 +61,7 @@ func (s *stack[T]) Length() int {
 	return len(s.data)
 }
 
+// NewStack creates an empty stack.
 func NewStack[T interface{}]() Stack[T] {
 	return &stack[T]{
 		lock: sync.Mutex{},

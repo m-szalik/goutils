@@ -2,17 +2,17 @@ package goutils
 
 import "errors"
 
-// JoinErrorHelper - helps to return JoinError
+// JoinErrorHelper accumulates errors and exposes them as a single error value.
 type JoinErrorHelper struct {
 	errs []error
 }
 
-// ErrorsCount amount of error
+// ErrorsCount returns the number of collected non-nil errors.
 func (jeh *JoinErrorHelper) ErrorsCount() int {
 	return len(jeh.errs)
 }
 
-// Append append error
+// Append adds non-nil errors to the helper and returns the helper for chaining.
 func (jeh *JoinErrorHelper) Append(errs ...error) *JoinErrorHelper {
 	if errs == nil {
 		return jeh
@@ -25,7 +25,8 @@ func (jeh *JoinErrorHelper) Append(errs ...error) *JoinErrorHelper {
 	return jeh
 }
 
-// AsError - return nil if no error, single error if one error was appended, JoinError otherwise
+// AsError returns nil when no errors were collected, the single error when one
+// was collected, or errors.Join for multiple errors.
 func (jeh *JoinErrorHelper) AsError() error {
 	switch len(jeh.errs) {
 	case 0:
@@ -36,6 +37,7 @@ func (jeh *JoinErrorHelper) AsError() error {
 		return errors.Join(jeh.errs...)
 	}
 }
+
 
 func (jeh *JoinErrorHelper) Iterate() <-chan error {
 	ch := make(chan error)
@@ -48,7 +50,7 @@ func (jeh *JoinErrorHelper) Iterate() <-chan error {
 	return ch
 }
 
-// NewJoinErrorHelper - create new JoinErrorHelper
+// NewJoinErrorHelper creates a helper optionally initialized with errs.
 func NewJoinErrorHelper(errs ...error) *JoinErrorHelper {
 	if errs == nil {
 		errs = make([]error, 0)

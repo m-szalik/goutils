@@ -13,12 +13,12 @@ import (
 var parseValueIntRegEx = regexp.MustCompile(`^-?\d+$`)
 var parseValueFloatRegEx = regexp.MustCompile(`^-?\d+\.\d+$`)
 
-// BoolToStr - return string for true or false bool value
+// BoolToStr returns trueVal when b is true, otherwise falseVal.
 func BoolToStr(b bool, trueVal, falseVal string) string {
 	return BoolTo(b, trueVal, falseVal)
 }
 
-// BoolTo - return T object for true or false bool value
+// BoolTo returns trueVal when b is true, otherwise falseVal.
 func BoolTo[T interface{}](b bool, trueVal, falseVal T) T {
 	if b {
 		return trueVal
@@ -27,7 +27,8 @@ func BoolTo[T interface{}](b bool, trueVal, falseVal T) T {
 	}
 }
 
-// HexToInt convert hex representation to int
+// HexToInt converts a hexadecimal string into int.
+// Both "0x" and "0X" prefixes are accepted.
 func HexToInt(hex string) (int, error) {
 	hex = strings.Replace(hex, "0x", "", -1) //nolint:staticcheck
 	hex = strings.Replace(hex, "0X", "", -1) //nolint:staticcheck
@@ -38,7 +39,8 @@ func HexToInt(hex string) (int, error) {
 	return int(i), nil
 }
 
-// ParseBool - return bool. True is one of "true", "1", "on", false is one of "false", "0", "off"
+// ParseBool parses string values into booleans.
+// True values: "true", "1", "on". False values: "false", "0", "off".
 func ParseBool(str string) (bool, error) {
 	s := strings.ToLower(strings.TrimSpace(str))
 	switch s {
@@ -51,8 +53,8 @@ func ParseBool(str string) (bool, error) {
 	}
 }
 
-// ParseValue - converts string to one of int64, flot64, string, bool, nil.
-// If impossible to convert, the same string is returned.
+// ParseValue converts a string to bool, nil, int64, float64, or leaves it as
+// string when conversion is not possible.
 func ParseValue(str string) interface{} {
 	if b, err := ParseBool(str); err == nil {
 		return b
@@ -83,7 +85,9 @@ func ParseValue(str string) interface{} {
 	return str
 }
 
-// AsFloat64 - convert multiple types (float32,int,int32,int64,string,[]byte) to float64
+// AsFloat64 converts input into float64.
+// Supported types: float32, float64, int, int32, int64, string, []byte, and
+// pointers to these types.
 func AsFloat64(input any) (float64, error) {
 	if input == nil {
 		return 0, fmt.Errorf("cannot convert nil to float64")
@@ -123,7 +127,7 @@ func AsFloat64(input any) (float64, error) {
 	}
 }
 
-// RoundFloat round float64 number
+// RoundFloat rounds val to the given decimal precision.
 func RoundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio

@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// CmpError describes the first mismatch found by CmpWalkStructAreEqual.
 type CmpError interface {
 	error
 	FieldPath() string
@@ -41,6 +42,8 @@ func cmpError(field string, a, b any, msg string) CmpError {
 	return &cmpErrorImpl{field, msg, a, b}
 }
 
+// CmpWalkStructAreEqual recursively compares a and b and returns nil when they
+// are equal, or a CmpError describing the first mismatch.
 func CmpWalkStructAreEqual(a interface{}, b interface{}) CmpError {
 	valA := elemValue(a)
 	valB := elemValue(b)
@@ -94,10 +97,12 @@ func cmpValue(a reflect.Value, b reflect.Value, fieldPath string) (eError CmpErr
 	return nil
 }
 
-// AcceptFunc - function used by CopyStruct function.
+// AcceptFunc decides whether a value at fieldPath should be copied by
+// CopyStruct.
 type AcceptFunc func(fieldPath string, srcValue reflect.Value) bool
 
-// CopyStruct - copy struct from src to dst. acceptFunc is a function that selects fields to be copied.
+// CopyStruct copies values from src to dst when acceptFunc returns true.
+// dst must be a pointer and both values must have the same underlying type.
 func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 	if reflect.TypeOf(dst).Kind() != reflect.Pointer {
 		return fmt.Errorf("dst must be a pointer")
@@ -110,12 +115,12 @@ func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 	return copyValue(source, destination, "", acceptFunc)
 }
 
-// CopyStructAll - copy all struct fields from src to dst.
+// CopyStructAll copies all fields from src to dst.
 func CopyStructAll(src interface{}, dst interface{}) error {
 	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool { return true })
 }
 
-// CopyStructSelected - copy selected fields from struct src to dst.
+// CopyStructSelected copies only fields whose path contains any selectedFilePaths value.
 func CopyStructSelected(src interface{}, dst interface{}, selectedFilePaths ...string) error {
 	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool {
 		if fieldPath == "" {
@@ -130,7 +135,8 @@ func CopyStructSelected(src interface{}, dst interface{}, selectedFilePaths ...s
 	})
 }
 
-// CopyStructAllExcept - copy selected fields from struct src to dst.
+// CopyStructAllExcept copies all fields except exact paths listed in
+// excludedFilePaths.
 func CopyStructAllExcept(src interface{}, dst interface{}, excludedFilePaths ...string) error {
 	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool {
 		for _, s := range excludedFilePaths {

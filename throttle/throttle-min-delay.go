@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// NewPeriodicThrottler emits at most one event per period, forwarding the
+// latest event seen within each interval.
 func NewPeriodicThrottler[E any](ctx context.Context, period time.Duration) Throttler[E] {
 	t := &throttler[E]{
 		input:  make(chan E),
@@ -33,6 +35,8 @@ func NewPeriodicThrottler[E any](ctx context.Context, period time.Duration) Thro
 	return t
 }
 
+// NewMinDelayThrottler forwards events no more often than minDelay.
+// Events arriving during the delay window are dropped.
 func NewMinDelayThrottler[E any](ctx context.Context, minDelay time.Duration) Throttler[E] {
 	t := &throttler[E]{
 		input:  make(chan E),

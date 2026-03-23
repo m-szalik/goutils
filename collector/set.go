@@ -1,5 +1,6 @@
 package collector
 
+// Set is a uniqueness-preserving Collection.
 type Set[T any] interface {
 	Collection[T]
 }
@@ -53,6 +54,7 @@ func (s *setImpl[T]) contains(element T) bool {
 	return ok
 }
 
+// NewSet creates an empty set.
 func NewSet[T comparable]() Set[T] {
 	return &setImpl[T]{
 		data: make(map[T]struct{}),

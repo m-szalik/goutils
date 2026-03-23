@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// NewMinStable emits value changes only after the input stays unchanged for
+// ignoreDuration.
+// initValue is the initial internal state and is not emitted automatically.
 func NewMinStable[E comparable](ctx context.Context, ignoreDuration time.Duration, initValue E) Throttler[E] {
 	t := &throttler[E]{
 		input:  make(chan E),

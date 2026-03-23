@@ -8,22 +8,28 @@ import (
 	"time"
 )
 
+// DataPointsCollector stores timestamped float64 values and provides
+// time-window aggregations.
 type DataPointsCollector interface {
+	// Collect adds value with the current timestamp.
 	Collect(value float64)
 
-	// Fork - create copy
+	// Fork creates a deep copy of collector state.
 	Fork() DataPointsCollector
 
-	// Avg - calculate average value
+	// Avg returns average value from [end-backDuration, end].
 	Avg(end time.Time, backDuration time.Duration) float64
 
+	// Max returns maximum value from [end-backDuration, end], or NaN when empty.
 	Max(end time.Time, backDuration time.Duration) float64
 
+	// Min returns minimum value from [end-backDuration, end], or NaN when empty.
 	Min(end time.Time, backDuration time.Duration) float64
 
-	// GetDataPointN - use n=0 for last point
+	// GetDataPointN returns the n-th latest data point, where n=0 is the most recent.
 	GetDataPointN(n int) (float64, *time.Time, error)
 
+	// GetDataPointsBetween returns values collected between start and end.
 	GetDataPointsBetween(start, end time.Time) []float64
 }
 
@@ -170,7 +176,8 @@ func newDataPointsCollectorInternal(maxSamples int, tp goutils.TimeProvider) Dat
 	}
 }
 
-// NewDataPointsCollector collection that can calculate Avg, Max or Min over a time window.
+// NewDataPointsCollector creates a bounded collector that supports Avg, Max,
+// and Min queries over time windows.
 func NewDataPointsCollector(maxSamples int) DataPointsCollector {
 	return newDataPointsCollectorInternal(maxSamples, goutils.SystemTimeProvider())
 }
