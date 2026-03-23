@@ -16,6 +16,9 @@ func MapKeys(m map[string]any) []string {
 // It mutates and returns initMap.
 func MapMerge[K comparable, V any](conflictFunc func(key K, v0, v1 V) V, initMap map[K]V, maps ...map[K]V) map[K]V {
 	for _, _map := range maps {
+		if _map == nil {
+			continue
+		}
 		for mk, mv := range _map {
 			if initMapVal, ok := initMap[mk]; !ok {
 				initMap[mk] = mv
