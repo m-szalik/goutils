@@ -29,3 +29,10 @@ func MapMerge[K comparable, V any](conflictFunc func(key K, v0, v1 V) V, initMap
 	}
 	return initMap
 }
+
+// MapMergeOverride merges maps into initMap.
+// When the same key appears more than once, the incoming value is used.
+// It mutates and returns initMap.
+func MapMergeOverride[K comparable, V any](initMap map[K]V, maps ...map[K]V) map[K]V {
+	return MapMerge[K, V](func(key K, v0, v1 V) V { return v1 }, initMap, maps...)
+}
