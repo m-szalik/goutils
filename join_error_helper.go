@@ -38,15 +38,14 @@ func (jeh *JoinErrorHelper) AsError() error {
 	}
 }
 
-
+// Iterate returns a channel that yields the collected errors and is closed
+// afterwards.
 func (jeh *JoinErrorHelper) Iterate() <-chan error {
-	ch := make(chan error)
-	go func() {
-		defer close(ch)
-		for _, err := range jeh.errs {
-			ch <- err
-		}
-	}()
+	ch := make(chan error, len(jeh.errs))
+	for _, err := range jeh.errs {
+		ch <- err
+	}
+	close(ch)
 	return ch
 }
 
