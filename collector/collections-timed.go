@@ -38,6 +38,9 @@ func (c *timedCollection[T]) Remove(removeMeElements ...T) int {
 func (c *timedCollection[T]) Add(values ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	if cap(c.data) == 0 {
+		return 0
+	}
 	for _, value := range values {
 		if c.count >= cap(c.data) {
 			if c.cleanup() == 0 {

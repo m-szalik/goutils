@@ -32,3 +32,12 @@ func Test_stackAsSlice(t *testing.T) {
 	expected := []*string{&a, &b}
 	assert.Equal(t, expected, st.AsSlice())
 }
+
+func Test_stackGetOutOfRange(t *testing.T) {
+	st := NewStack[string]()
+	a := "A"
+	st.Push(&a)
+	assert.Nil(t, st.Get(-1))
+	assert.Nil(t, st.Get(1))
+	assert.Equal(t, &a, st.Get(0))
+}

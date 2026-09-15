@@ -51,7 +51,7 @@ func (s *stack[T]) Get(index int) *T {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	length := len(s.data)
-	if index >= length || length == 0 {
+	if index < 0 || index >= length {
 		return nil
 	}
 	return s.data[index]

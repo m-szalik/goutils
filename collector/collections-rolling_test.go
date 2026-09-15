@@ -1,8 +1,10 @@
 package collector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_rollingCollectionAdd(t *testing.T) {
@@ -68,4 +70,13 @@ func Test_rollingCollectionRemoveLastWhenFull(t *testing.T) {
 	assert.Equal(t, 2, col.Length())
 	assert.False(t, col.Contains(3))
 	assert.Equal(t, []int{1, 2}, convert(col.AsSlice()))
+}
+
+func Test_rollingCollectionZeroCapacity(t *testing.T) {
+	col := NewRollingCollection[int](0)
+	assert.Equal(t, 0, col.Add(1))
+	assert.Equal(t, 0, col.Length())
+	timed := NewTimedCollection[int](0, time.Minute)
+	assert.Equal(t, 0, timed.Add(1))
+	assert.Equal(t, 0, timed.Length())
 }
