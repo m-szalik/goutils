@@ -44,7 +44,9 @@ func (s *stack[T]) Pop() *T {
 func (s *stack[T]) AsSlice() []*T {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	return s.data[:]
+	ret := make([]*T, len(s.data))
+	copy(ret, s.data)
+	return ret
 }
 
 func (s *stack[T]) Get(index int) *T {

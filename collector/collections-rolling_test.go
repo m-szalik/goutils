@@ -80,3 +80,12 @@ func Test_rollingCollectionZeroCapacity(t *testing.T) {
 	assert.Equal(t, 0, timed.Add(1))
 	assert.Equal(t, 0, timed.Length())
 }
+
+func Test_rollingCollectionAsSliceIsCopy(t *testing.T) {
+	col := NewRollingCollection[int](2)
+	col.Add(1, 2)
+	snapshot := col.AsSlice()
+	col.Add(3)
+	assert.Equal(t, []int{1, 2}, convert(snapshot))
+	assert.Equal(t, []int{2, 3}, convert(col.AsSlice()))
+}

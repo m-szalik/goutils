@@ -79,7 +79,9 @@ func (c *rollingCollection[T]) Contains(element T) bool {
 func (c *rollingCollection[T]) AsSlice() []*T {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	return c.data[0:c.count]
+	ret := make([]*T, c.count)
+	copy(ret, c.data[:c.count])
+	return ret
 }
 
 // NewRollingCollection returns a fixed-size collection that keeps at most
