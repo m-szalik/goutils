@@ -36,3 +36,13 @@ func Test_timedCollectionAdd(t *testing.T) {
 		})
 	}
 }
+
+func Test_timedCollectionRemove(t *testing.T) {
+	col := NewTimedCollection[int](5, time.Minute)
+	col.Add(1)
+	col.Add(2)
+	col.Add(2)
+	assert.Equal(t, 0, col.Remove(9))
+	assert.Equal(t, 2, col.Remove(2))
+	assert.Equal(t, []int{1}, convert(col.AsSlice()))
+}

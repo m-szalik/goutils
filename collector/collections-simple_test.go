@@ -50,3 +50,11 @@ func Test_simpleCollectionAddMany(t *testing.T) {
 	assert.Equal(t, 3, col.Add(1, 2, 3))
 	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
 }
+
+func Test_simpleCollectionRemoveConsecutive(t *testing.T) {
+	col := NewSimpleCollection[int]()
+	col.Add(1, 1, 2, 1)
+	assert.Equal(t, 3, col.Remove(1))
+	assert.Equal(t, []int{2}, convert(col.AsSlice()))
+	assert.Equal(t, 1, col.Length())
+}

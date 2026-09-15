@@ -9,24 +9,22 @@ type rollingCollection[T comparable] struct {
 }
 
 func (c *rollingCollection[T]) removeIndex(index int) {
-	for i := index + 1; i < len(c.data); i++ {
-		c.data[i-1] = c.data[i]
-	}
+	copy(c.data[index:c.count-1], c.data[index+1:c.count])
 	c.count--
+	c.data[c.count] = nil
 }
 
 func (c *rollingCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	to := len(c.data)
 	removals := 0
 	for _, removeMe := range removeMeElements {
-		for i := 0; i < to; i++ {
-			ptr := c.data[i]
-			if *ptr == removeMe {
+		for i := 0; i < c.count; {
+			if *c.data[i] == removeMe {
 				c.removeIndex(i)
 				removals++
-				to--
+			} else {
+				i++
 			}
 		}
 	}

@@ -51,3 +51,21 @@ func Test_rollingCollectionAddMany(t *testing.T) {
 	assert.Equal(t, 3, col.Add(1, 2, 3))
 	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
 }
+
+func Test_rollingCollectionRemoveNotFull(t *testing.T) {
+	col := NewRollingCollection[int](5)
+	col.Add(1, 2, 2, 3)
+	assert.Equal(t, 0, col.Remove(9))
+	assert.Equal(t, 2, col.Remove(2))
+	assert.Equal(t, []int{1, 3}, convert(col.AsSlice()))
+	assert.False(t, col.Contains(2))
+}
+
+func Test_rollingCollectionRemoveLastWhenFull(t *testing.T) {
+	col := NewRollingCollection[int](3)
+	col.Add(1, 2, 3)
+	assert.Equal(t, 1, col.Remove(3))
+	assert.Equal(t, 2, col.Length())
+	assert.False(t, col.Contains(3))
+	assert.Equal(t, []int{1, 2}, convert(col.AsSlice()))
+}

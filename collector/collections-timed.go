@@ -21,15 +21,14 @@ type timedCollection[T comparable] struct {
 func (c *timedCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	to := len(c.data)
 	removals := 0
 	for _, removeMe := range removeMeElements {
-		for i := 0; i < to; i++ {
-			ptr := c.data[i]
-			if ptr.element == removeMe {
+		for i := 0; i < c.count; {
+			if c.data[i].element == removeMe {
 				c.removeIndex(i)
 				removals++
-				to--
+			} else {
+				i++
 			}
 		}
 	}

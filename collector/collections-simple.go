@@ -12,28 +12,22 @@ type simpleCollection[T comparable] struct {
 }
 
 func (c *simpleCollection[T]) removeIndex(index int) {
-	for i := index + 1; i < len(c.data); i++ {
-		c.data[i-1] = c.data[i]
-	}
+	c.data = append(c.data[:index], c.data[index+1:]...)
 }
 
 func (c *simpleCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	to := len(c.data)
 	removals := 0
 	for _, removeMe := range removeMeElements {
-		for i := 0; i < to; i++ {
-			ptr := c.data[i]
-			if *ptr == removeMe {
+		for i := 0; i < len(c.data); {
+			if *c.data[i] == removeMe {
 				c.removeIndex(i)
 				removals++
-				to--
+			} else {
+				i++
 			}
 		}
-	}
-	if removals > 0 {
-		c.data = c.data[0:to]
 	}
 	return removals
 }
