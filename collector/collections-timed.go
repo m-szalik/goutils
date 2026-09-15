@@ -54,15 +54,20 @@ func (c *timedCollection[T]) Add(values ...T) int {
 }
 
 func (c *timedCollection[T]) Length() int {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.cleanup()
 	return c.count
 }
 
 func (c *timedCollection[T]) Get(index int) *T {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.cleanup()
 	if index < 0 || index >= c.count {
 		return nil
 	}
-	wrapper := c.data[index]
-	return &wrapper.element
+	return &c.data[index].element
 }
 
 func (c *timedCollection[T]) AsSlice() []*T {
@@ -77,10 +82,10 @@ func (c *timedCollection[T]) AsSlice() []*T {
 }
 
 func (c *timedCollection[T]) Contains(element T) bool {
-	for _, e := range c.data {
-		if e == nil {
-			continue
-		}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.cleanup()
+	for _, e := range c.data[:c.count] {
 		if e.element == element {
 			return true
 		}

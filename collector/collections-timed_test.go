@@ -53,3 +53,16 @@ func Test_timedCollectionAddMany(t *testing.T) {
 	assert.Equal(t, 3, col.Length())
 	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
 }
+
+func Test_timedCollectionExpiry(t *testing.T) {
+	tp := goutils.NewMockTimeProvider()
+	col := newTimedCollectionWithTimeProvider[int](5, 3*time.Second, tp)
+	col.Add(7)
+	assert.Equal(t, 1, col.Length())
+	assert.True(t, col.Contains(7))
+	assert.NotNil(t, col.(IndexableCollection[int]).Get(0))
+	tp.Add(5 * time.Second)
+	assert.Equal(t, 0, col.Length())
+	assert.False(t, col.Contains(7))
+	assert.Nil(t, col.(IndexableCollection[int]).Get(0))
+}
