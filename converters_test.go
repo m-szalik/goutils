@@ -162,6 +162,8 @@ func TestAsFloat64(t *testing.T) {
 		{int64(17), 17, false},
 		{int32(17), 17, false},
 		{&vi32, 17, false},
+		{(*int32)(nil), 0, true},
+		{"abc", 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("converting %v of type %T", tt.arg, tt.arg), func(t *testing.T) {

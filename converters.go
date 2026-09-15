@@ -97,6 +97,9 @@ func AsFloat64(input any) (float64, error) {
 	var i any
 	rv := reflect.ValueOf(input)
 	if rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return 0, fmt.Errorf("cannot convert nil %T to float64", input)
+		}
 		i = rv.Elem().Interface()
 	} else {
 		i = input
