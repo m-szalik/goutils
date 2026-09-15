@@ -65,7 +65,7 @@ func (k *keyFile) save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(k.file, buff, os.ModePerm)
+	return os.WriteFile(k.file, buff, 0o644)
 }
 
 func (k *keyFile) load() error {
