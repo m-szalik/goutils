@@ -79,6 +79,8 @@ func (a *dataPointsCollectorImpl) GetDataPointN(n int) (float64, *time.Time, err
 }
 
 func (a *dataPointsCollectorImpl) GetDataPointsBetween(start, end time.Time) []float64 {
+	a.lock.Lock()
+	defer a.lock.Unlock()
 	out := make([]float64, 0)
 	for _, dp := range a.data {
 		if dp == nil || dp.t.Before(start) {

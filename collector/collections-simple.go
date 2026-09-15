@@ -66,6 +66,8 @@ func (c *simpleCollection[T]) AsSlice() []*T {
 }
 
 func (c *simpleCollection[T]) Contains(element T) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	for _, e := range c.data {
 		if e == nil {
 			continue
@@ -78,18 +80,16 @@ func (c *simpleCollection[T]) Contains(element T) bool {
 }
 
 func (c *simpleCollection[T]) String() string {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	strs := make([]string, len(c.data))
-	func() {
-		c.lock.Lock()
-		defer c.lock.Unlock()
-		for i, e := range c.data {
-			if e == nil {
-				strs[i] = "nil"
-			} else {
-				strs[i] = fmt.Sprint(*e)
-			}
+	for i, e := range c.data {
+		if e == nil {
+			strs[i] = "nil"
+		} else {
+			strs[i] = fmt.Sprint(*e)
 		}
-	}()
+	}
 	return strings.Join(strs, ",")
 }
 

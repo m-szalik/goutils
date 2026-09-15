@@ -58,6 +58,8 @@ func (s *stack[T]) Get(index int) *T {
 }
 
 func (s *stack[T]) Length() int {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	return len(s.data)
 }
 

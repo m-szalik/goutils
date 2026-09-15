@@ -51,10 +51,14 @@ func (c *rollingCollection[T]) Add(values ...T) int {
 }
 
 func (c *rollingCollection[T]) Length() int {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	return c.count
 }
 
 func (c *rollingCollection[T]) Get(index int) *T {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	if index < 0 || index >= c.count {
 		return nil
 	}
@@ -62,10 +66,9 @@ func (c *rollingCollection[T]) Get(index int) *T {
 }
 
 func (c *rollingCollection[T]) Contains(element T) bool {
-	for _, e := range c.data {
-		if e == nil {
-			continue
-		}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	for _, e := range c.data[:c.count] {
 		if *e == element {
 			return true
 		}
@@ -74,6 +77,8 @@ func (c *rollingCollection[T]) Contains(element T) bool {
 }
 
 func (c *rollingCollection[T]) AsSlice() []*T {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	return c.data[0:c.count]
 }
 
