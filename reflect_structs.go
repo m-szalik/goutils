@@ -158,6 +158,9 @@ type AcceptFunc func(fieldPath string, srcValue reflect.Value) bool
 
 // CopyStruct copies values from src to dst when acceptFunc returns true.
 // dst must be a pointer and both values must have the same underlying type.
+// Zero values in src are skipped, so the corresponding dst values are kept.
+// Unexported fields are skipped unless a struct has no exported fields at all
+// (for example time.Time), in which case the whole value is copied.
 func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 	if reflect.TypeOf(dst).Kind() != reflect.Pointer {
 		return fmt.Errorf("dst must be a pointer")
@@ -170,7 +173,7 @@ func CopyStruct(src interface{}, dst interface{}, acceptFunc AcceptFunc) error {
 	return copyValue(source, destination, "", acceptFunc)
 }
 
-// CopyStructAll copies all fields from src to dst.
+// CopyStructAll copies all non-zero fields from src to dst.
 func CopyStructAll(src interface{}, dst interface{}) error {
 	return CopyStruct(src, dst, func(fieldPath string, srcValue reflect.Value) bool { return true })
 }
@@ -203,6 +206,15 @@ func CopyStructAllExcept(src interface{}, dst interface{}, excludedFilePaths ...
 	})
 }
 
+func hasExportedFields(t reflect.Type) bool {
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).IsExported() {
+			return true
+		}
+	}
+	return false
+}
+
 func elemValue(val interface{}) reflect.Value {
 	v := reflect.ValueOf(val)
 	if v.Kind() == reflect.Pointer {
@@ -229,9 +241,17 @@ func copyValue(source reflect.Value, destination reflect.Value, fieldPath string
 	}
 	switch source.Kind() {
 	case reflect.Struct:
+		if !hasExportedFields(source.Type()) {
+			// e.g. time.Time: fields cannot be set one by one, copy the whole value
+			destination.Set(source)
+			return nil
+		}
 		for i := 0; i < source.NumField(); i++ {
 			srcFieldValue := source.Field(i)
 			dstFieldValue := destination.Field(i)
+			if !dstFieldValue.CanSet() {
+				continue // unexported field
+			}
 			structKey := source.Type().Field(i).Name
 			newFieldPath := fmt.Sprintf("%s.%s", fieldPath, structKey)
 			if err := copyValue(srcFieldValue, dstFieldValue, newFieldPath, acceptFunc); err != nil {
@@ -239,10 +259,9 @@ func copyValue(source reflect.Value, destination reflect.Value, fieldPath string
 			}
 		}
 	case reflect.Array, reflect.Slice:
-		// make an array
-		sliceInstance := reflect.MakeSlice(source.Type(), source.Len(), source.Cap())
-		destination.Set(sliceInstance)
-		// copy values
+		if source.Kind() == reflect.Slice {
+			destination.Set(reflect.MakeSlice(source.Type(), source.Len(), source.Cap()))
+		}
 		for i := 0; i < source.Len(); i++ {
 			if err := copyValue(source.Index(i), destination.Index(i), fmt.Sprintf("%s[%d]", fieldPath, i), acceptFunc); err != nil {
 				return err

@@ -172,3 +172,26 @@ func TestCmpWalkStructAreEqualSpecialValues(t *testing.T) {
 		assert.Contains(t, err.Error(), "int and string")
 	}
 }
+
+func TestCopyStructSpecialFields(t *testing.T) {
+	type inner struct {
+		Name   string
+		secret int
+	}
+	type testObject struct {
+		When   time.Time
+		Arr    [2]int
+		Inner  inner
+		hidden string
+	}
+	now := time.Now()
+	src := testObject{When: now, Arr: [2]int{1, 2}, Inner: inner{Name: "x", secret: 7}, hidden: "h"}
+	dst := testObject{}
+	err := CopyStructAll(src, &dst)
+	assert.NoError(t, err)
+	assert.True(t, now.Equal(dst.When))
+	assert.Equal(t, [2]int{1, 2}, dst.Arr)
+	assert.Equal(t, "x", dst.Inner.Name)
+	assert.Equal(t, 0, dst.Inner.secret)
+	assert.Equal(t, "", dst.hidden)
+}
