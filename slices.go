@@ -70,22 +70,21 @@ func SliceContains[T comparable](slice []T, e T) bool {
 
 // SliceRemove removes all occurrences of e from slice.
 // It returns the resulting slice and the number of removed elements.
+// The input slice is left unchanged.
 func SliceRemove[T comparable](slice []T, e any) ([]T, int) {
-	mySlice := slice
-	size := len(slice)
+	result := make([]T, 0, len(slice))
 	removed := 0
-	for i := 0; i < size-removed; i++ {
-		if mySlice[i] == e {
-			mySlice = append(mySlice[:i], mySlice[i+1:]...)
+	for _, v := range slice {
+		if v == e {
 			removed++
-			i--
+		} else {
+			result = append(result, v)
 		}
 	}
-	if removed > 0 {
-		return mySlice, removed
-	} else {
-		return slice, removed
+	if removed == 0 {
+		return slice, 0
 	}
+	return result, removed
 }
 
 // SliceMap maps each element in inputData to a new value.
