@@ -96,3 +96,15 @@ func TestFileIsNotExecutable(t *testing.T) {
 		assert.Equal(t, os.FileMode(0), info.Mode().Perm()&0o133, "file must not be executable or group/world writable")
 	})
 }
+
+func TestPersistedAcrossReopen(t *testing.T) {
+	withKeyValueDBFile(t, func(t *testing.T, db KeyValueDBFile) {
+		fn := db.(*keyFile).file
+		assert.NoError(t, db.Put("key", []byte("xyz")))
+		_, err := os.Stat(fn + ".tmp")
+		assert.True(t, os.IsNotExist(err), "temporary file must not be left behind")
+		reopened, err := NewKeyValueDBFile(fn)
+		assert.NoError(t, err)
+		assert.Equal(t, "xyz", string(reopened.Get("key")))
+	})
+}

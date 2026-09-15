@@ -65,7 +65,11 @@ func (k *keyFile) save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(k.file, buff, 0o644)
+	tmpFile := k.file + ".tmp"
+	if err := os.WriteFile(tmpFile, buff, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmpFile, k.file)
 }
 
 func (k *keyFile) load() error {
