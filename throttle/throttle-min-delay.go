@@ -15,7 +15,7 @@ func NewPeriodicThrottler[E any](ctx context.Context, period time.Duration) Thro
 	go func() {
 		defer close(t.input)
 		defer close(t.output)
-		tick := time.NewTimer(period)
+		tick := time.NewTicker(period)
 		defer tick.Stop()
 		var lastInput *E = nil
 		for {

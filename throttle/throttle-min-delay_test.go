@@ -104,3 +104,18 @@ func TestNewPeriodicThrottler(t *testing.T) {
 	})
 
 }
+
+func TestNewPeriodicThrottlerMultiplePeriods(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	th := NewPeriodicThrottler[any](ctx, 50*time.Millisecond)
+	testEvents := testThrottler(ctx, th)
+	for i := 1; i <= 3; i++ {
+		th.Input() <- i
+		time.Sleep(80 * time.Millisecond)
+	}
+	assert.Equal(t, 3, testEvents.len())
+	for i := 0; i < testEvents.len(); i++ {
+		assert.Equal(t, i+1, testEvents.payload(i))
+	}
+}
