@@ -46,3 +46,10 @@ func Test_timedCollectionRemove(t *testing.T) {
 	assert.Equal(t, 2, col.Remove(2))
 	assert.Equal(t, []int{1}, convert(col.AsSlice()))
 }
+
+func Test_timedCollectionAddMany(t *testing.T) {
+	col := NewTimedCollection[int](5, time.Minute)
+	assert.Equal(t, 3, col.Add(1, 2, 3))
+	assert.Equal(t, 3, col.Length())
+	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
+}

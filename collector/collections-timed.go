@@ -48,8 +48,8 @@ func (c *timedCollection[T]) Add(values ...T) int {
 			time:    c.timeProvider.Now().Add(c.duration),
 			element: value,
 		}
+		c.count++
 	}
-	c.count++
 	return len(values)
 }
 
