@@ -3,6 +3,7 @@ package goutils
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -203,7 +204,10 @@ func TestHexToInt(t *testing.T) {
 		{"-B", -11, assert2.NoError},
 		{"-b", -11, assert2.NoError},
 		{"-0xb", -11, assert2.NoError},
+		{"+0x1f", 31, assert2.NoError},
 		{"invalid", 0, assert2.Error},
+		{"10x5", 0, assert2.Error},
+		{"0x0x5", 0, assert2.Error},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("HexToInt(\"%s\") is %d", tt.args, tt.want), func(t *testing.T) {
@@ -213,5 +217,10 @@ func TestHexToInt(t *testing.T) {
 			}
 			assert2.Equalf(t, tt.want, got, "HexToInt(%v)", tt.args)
 		})
+	}
+	if strconv.IntSize == 64 {
+		got, err := HexToInt("0xFFFFFFFF")
+		assert2.NoError(t, err)
+		assert2.Equal(t, 4294967295, got)
 	}
 }
