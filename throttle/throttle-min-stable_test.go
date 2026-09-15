@@ -46,3 +46,20 @@ func TestNewMinStable(t *testing.T) {
 	})
 
 }
+
+func TestNewMinStableRapidChanges(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	th := NewMinStable[any](ctx, 100*time.Millisecond, 0)
+	testEvents := testThrottler(ctx, th)
+	th.Input() <- 1
+	time.Sleep(70 * time.Millisecond)
+	th.Input() <- 2
+	time.Sleep(70 * time.Millisecond)
+	th.Input() <- 3
+	time.Sleep(50 * time.Millisecond)
+	assert.Equal(t, 0, testEvents.len(), "no value was stable long enough yet")
+	time.Sleep(100 * time.Millisecond)
+	assert.Equal(t, 1, testEvents.len())
+	assert.Equal(t, 3, testEvents.payload(0))
+}
