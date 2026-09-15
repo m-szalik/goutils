@@ -59,3 +59,15 @@ func TestMapMerge(t *testing.T) {
 		assert.Equal(t, []string{"a", "a", "b"}, calls)
 	})
 }
+
+func TestMapMergeOverride(t *testing.T) {
+	t.Run("nil initMap", func(t *testing.T) {
+		got := MapMergeOverride[string, int](nil, map[string]int{"a": 1})
+		assert.Equal(t, map[string]int{"a": 1}, got)
+	})
+
+	t.Run("incoming value wins", func(t *testing.T) {
+		got := MapMergeOverride(map[string]int{"a": 1, "b": 2}, map[string]int{"a": 3}, map[string]int{"a": 4, "c": 5})
+		assert.Equal(t, map[string]int{"a": 4, "b": 2, "c": 5}, got)
+	})
+}

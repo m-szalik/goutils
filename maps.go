@@ -13,8 +13,11 @@ func MapKeys(m map[string]any) []string {
 // MapMerge merges maps into initMap.
 // When the same key appears more than once, conflictFunc is used to resolve
 // the value, where v0 is the current value in initMap and v1 is the incoming value.
-// It mutates and returns initMap.
+// It mutates and returns initMap; a nil initMap is replaced by a new map.
 func MapMerge[K comparable, V any](conflictFunc func(key K, v0, v1 V) V, initMap map[K]V, maps ...map[K]V) map[K]V {
+	if initMap == nil {
+		initMap = make(map[K]V)
+	}
 	for _, _map := range maps {
 		if _map == nil {
 			continue
