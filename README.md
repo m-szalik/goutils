@@ -99,3 +99,7 @@ Simple Publish-Subscribe implementation based on channels.
 Implementation allows to have multiple subscribers as well as multiple publishers.
 
 [Example](./pubsub/example.go)
+## License
+Apache License 2.0, see [LICENSE](./LICENSE).
+The repository follows the [REUSE](https://reuse.software) specification; copyright and license
+information for every file is declared in [REUSE.toml](./REUSE.toml).
