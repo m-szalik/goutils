@@ -53,48 +53,103 @@ func CmpWalkStructAreEqual(a interface{}, b interface{}) CmpError {
 func cmpValue(a reflect.Value, b reflect.Value, fieldPath string) (eError CmpError) {
 	defer func() {
 		if r := recover(); r != nil {
-			eError = cmpError(fieldPath, a, b, eError.Error())
+			eError = cmpError(fieldPath, reportValue(a), reportValue(b), fmt.Sprint(r))
 		}
 	}()
-	if a.Type() != b.Type() || a.Kind() != b.Kind() {
-		return cmpError(fieldPath, a, b, fmt.Sprintf("A and B must be of the same type but %T and %T had been given", a, b))
-	}
 	if !a.IsValid() || !b.IsValid() {
-		return cmpError(fieldPath, a, b, "not valid element")
+		if !a.IsValid() && !b.IsValid() {
+			return nil
+		}
+		return cmpError(fieldPath, reportValue(a), reportValue(b), "A and B must be of the same but one is nil")
+	}
+	if a.Type() != b.Type() {
+		return cmpError(fieldPath, reportValue(a), reportValue(b), fmt.Sprintf("A and B must be of the same type but %s and %s had been given", a.Type(), b.Type()))
 	}
 	switch a.Kind() {
-	case reflect.Pointer:
+	case reflect.Pointer, reflect.Interface:
 		if a.IsNil() != b.IsNil() {
-			return cmpError(fieldPath, a, b, "A and B must be of the same but one is nil")
+			return cmpError(fieldPath, reportValue(a), reportValue(b), "A and B must be of the same but one is nil")
+		}
+		if a.IsNil() || (a.Kind() == reflect.Pointer && a.Pointer() == b.Pointer()) {
+			return nil
 		}
 		return cmpValue(a.Elem(), b.Elem(), fieldPath)
 	case reflect.Struct:
 		for i := 0; i < a.NumField(); i++ {
-			aFieldValue := a.Field(i)
-			bFieldValue := b.Field(i)
 			structKey := a.Type().Field(i).Name
-			if err := cmpValue(aFieldValue, bFieldValue, fmt.Sprintf("%s.%s", fieldPath, structKey)); err != nil {
+			if err := cmpValue(a.Field(i), b.Field(i), fmt.Sprintf("%s.%s", fieldPath, structKey)); err != nil {
 				return err
 			}
 		}
 	case reflect.Array, reflect.Slice:
 		if a.Len() != b.Len() {
-			return cmpError(fieldPath, a, b, "arrays are not the same size")
+			return cmpError(fieldPath, reportValue(a), reportValue(b), "arrays are not the same size")
 		}
-		if a.IsNil() != b.IsNil() {
-			return cmpError(fieldPath, a, b, "A and B must be of the same but one is nil")
+		if a.Kind() == reflect.Slice && a.IsNil() != b.IsNil() {
+			return cmpError(fieldPath, reportValue(a), reportValue(b), "A and B must be of the same but one is nil")
 		}
 		for i := 0; i < a.Len(); i++ {
 			if err := cmpValue(a.Index(i), b.Index(i), fmt.Sprintf("%s[%d]", fieldPath, i)); err != nil {
 				return err
 			}
 		}
+	case reflect.Map:
+		if a.Len() != b.Len() {
+			return cmpError(fieldPath, reportValue(a), reportValue(b), "maps are not the same size")
+		}
+		if a.IsNil() != b.IsNil() {
+			return cmpError(fieldPath, reportValue(a), reportValue(b), "A and B must be of the same but one is nil")
+		}
+		for _, key := range a.MapKeys() {
+			bValue := b.MapIndex(key)
+			if !bValue.IsValid() {
+				return cmpError(fieldPath, reportValue(a), reportValue(b), fmt.Sprintf("key %v missing in B", key))
+			}
+			if err := cmpValue(a.MapIndex(key), bValue, fmt.Sprintf("%s[%v]", fieldPath, key)); err != nil {
+				return err
+			}
+		}
+	case reflect.Func, reflect.Chan, reflect.UnsafePointer:
+		if a.Pointer() != b.Pointer() {
+			return cmpError(fieldPath, reportValue(a), reportValue(b), fmt.Sprintf("%v != %v", a, b))
+		}
 	default:
-		if a.Interface() != b.Interface() {
-			return cmpError(fieldPath, a.Interface(), b.Interface(), fmt.Sprintf("%v != %v", a.Interface(), b.Interface()))
+		if !leafEqual(a, b) {
+			return cmpError(fieldPath, reportValue(a), reportValue(b), fmt.Sprintf("%v != %v", a, b))
 		}
 	}
 	return nil
+}
+
+// reportValue returns the value held by v for error reporting. Values obtained
+// through unexported fields cannot be converted to interface{} and are
+// reported as reflect.Value.
+func reportValue(v reflect.Value) any {
+	if v.IsValid() && v.CanInterface() {
+		return v.Interface()
+	}
+	return v
+}
+
+// leafEqual compares scalar values without calling Interface(), so that
+// unexported fields can be compared as well.
+func leafEqual(a, b reflect.Value) bool {
+	switch a.Kind() {
+	case reflect.Bool:
+		return a.Bool() == b.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return a.Int() == b.Int()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return a.Uint() == b.Uint()
+	case reflect.Float32, reflect.Float64:
+		return a.Float() == b.Float()
+	case reflect.Complex64, reflect.Complex128:
+		return a.Complex() == b.Complex()
+	case reflect.String:
+		return a.String() == b.String()
+	default:
+		return a.Interface() == b.Interface()
+	}
 }
 
 // AcceptFunc decides whether a value at fieldPath should be copied by
