@@ -2,9 +2,11 @@ package throttle
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type event struct {
@@ -12,7 +14,26 @@ type event struct {
 	payload any
 }
 type events struct {
+	lock   sync.Mutex
 	events []event
+}
+
+func (e *events) add(ev event) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	e.events = append(e.events, ev)
+}
+
+func (e *events) len() int {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	return len(e.events)
+}
+
+func (e *events) payload(i int) any {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	return e.events[i].payload
 }
 
 func testThrottler(ctx context.Context, th Throttler[any]) *events {
@@ -25,7 +46,7 @@ func testThrottler(ctx context.Context, th Throttler[any]) *events {
 			case <-ctx.Done():
 				return
 			case out := <-th.Output():
-				testEvents.events = append(testEvents.events, event{
+				testEvents.add(event{
 					when:    time.Now(),
 					payload: out,
 				})
@@ -47,10 +68,10 @@ func TestNewMinDelayThrottler(t *testing.T) {
 		time.Sleep(501 * time.Millisecond)
 		th.Input() <- "three"
 		time.Sleep(100 * time.Millisecond)
-		assert.Equal(t, 2, len(testEvents.events))
-		if len(testEvents.events) > 1 {
-			assert.Equal(t, "one", testEvents.events[0].payload)
-			assert.Equal(t, "three", testEvents.events[1].payload)
+		assert.Equal(t, 2, testEvents.len())
+		if testEvents.len() > 1 {
+			assert.Equal(t, "one", testEvents.payload(0))
+			assert.Equal(t, "three", testEvents.payload(1))
 		}
 	})
 
@@ -60,7 +81,7 @@ func TestNewMinDelayThrottler(t *testing.T) {
 		th := NewMinDelayThrottler[any](ctx, 1*time.Second)
 		testEvents := testThrottler(ctx, th)
 		time.Sleep(2001 * time.Millisecond)
-		assert.Equal(t, 0, len(testEvents.events))
+		assert.Equal(t, 0, testEvents.len())
 	})
 
 }
@@ -76,9 +97,9 @@ func TestNewPeriodicThrottler(t *testing.T) {
 		time.Sleep(1001 * time.Millisecond)
 		th.Input() <- "three"
 		time.Sleep(100 * time.Millisecond)
-		assert.Equal(t, 1, len(testEvents.events))
-		if len(testEvents.events) > 0 {
-			assert.Equal(t, "two", testEvents.events[0].payload)
+		assert.Equal(t, 1, testEvents.len())
+		if testEvents.len() > 0 {
+			assert.Equal(t, "two", testEvents.payload(0))
 		}
 	})
 
