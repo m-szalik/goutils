@@ -93,3 +93,30 @@ func TestNewPubSubShutdown(t *testing.T) {
 func TestRunExample(t *testing.T) {
 	ExamplePubSub()
 }
+
+func TestNewPubSubSubscriberLeavesDuringPublish(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	ps := NewPubSub[int](ctx)
+	subCtx, subCancel := context.WithCancel(ctx)
+	defer subCancel()
+	subCh := ps.NewSubscriber(subCtx)
+	publishCh := ps.NewPublisher()
+	publishCh <- 0
+	assert.Equal(t, 0, <-subCh)
+	publishCh <- 1 // accepted, but delivery blocks because the subscriber is not reading
+	delay()
+	subCancel() // subscriber leaves without reading
+	delay()
+	done := make(chan struct{})
+	go func() {
+		publishCh <- 2
+		ps.NewSubscriber(ctx)
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("pubsub deadlocked after a subscriber left during publish")
+	}
+}
