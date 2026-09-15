@@ -1,10 +1,12 @@
 package goutils
 
 import (
-	"github.com/stretchr/testify/assert"
 	"math"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTimeCounter(t *testing.T) {
@@ -37,4 +39,18 @@ func assertDuration(t *testing.T, expected time.Duration, val time.Duration) {
 	if math.Abs(float64(expected-val)) > float64(50*time.Millisecond) {
 		assert.Equal(t, expected, val)
 	}
+}
+
+// Meaningful under -race: every method must be safe to call concurrently.
+func TestTimeCounterConcurrent(t *testing.T) {
+	tc := NewTimeCounter()
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(4)
+		go func() { defer wg.Done(); tc.Start() }()
+		go func() { defer wg.Done(); tc.Stop() }()
+		go func() { defer wg.Done(); _ = tc.Value() }()
+		go func() { defer wg.Done(); _ = tc.Reset() }()
+	}
+	wg.Wait()
 }

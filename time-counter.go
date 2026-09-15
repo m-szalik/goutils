@@ -16,6 +16,8 @@ type TimeCounter struct {
 // Reset returns the current elapsed duration and resets it to zero.
 // If the counter is running, it continues running from the reset point.
 func (d *TimeCounter) Reset() time.Duration {
+	d.lock.Lock()
+	defer d.lock.Unlock()
 	now := d.timeProvider.Now()
 	if d.sessionStart != nil {
 		d.continued += now.Sub(*d.sessionStart)
@@ -40,9 +42,9 @@ func (d *TimeCounter) Value() time.Duration {
 
 // Start starts measuring time when it is not already running.
 func (d *TimeCounter) Start() {
+	d.lock.Lock()
+	defer d.lock.Unlock()
 	if d.sessionStart == nil {
-		d.lock.Lock()
-		defer d.lock.Unlock()
 		now := d.timeProvider.Now()
 		d.sessionStart = &now
 	}
@@ -50,9 +52,9 @@ func (d *TimeCounter) Start() {
 
 // Stop stops measuring time and accumulates the elapsed session.
 func (d *TimeCounter) Stop() {
+	d.lock.Lock()
+	defer d.lock.Unlock()
 	if d.sessionStart != nil {
-		d.lock.Lock()
-		defer d.lock.Unlock()
 		d.continued += d.timeProvider.Now().Sub(*d.sessionStart)
 		d.sessionStart = nil
 	}
