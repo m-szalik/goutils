@@ -1,5 +1,7 @@
 # Project goutils
 [![Go](https://github.com/m-szalik/goutils/actions/workflows/go.yml/badge.svg)](https://github.com/m-szalik/goutils/actions/workflows/go.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/m-szalik/goutils)](https://api.reuse.software/info/github.com/m-szalik/goutils)
+[![Go Reference](https://pkg.go.dev/badge/github.com/m-szalik/goutils.svg)](https://pkg.go.dev/github.com/m-szalik/goutils)
 
 
 Simple and useful functions for go.
