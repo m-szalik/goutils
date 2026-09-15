@@ -42,7 +42,8 @@ func (c *simpleCollection[T]) Add(elements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	for _, elem := range elements {
-		c.data = append(c.data, &elem)
+		element := elem
+		c.data = append(c.data, &element)
 	}
 	return len(elements)
 }

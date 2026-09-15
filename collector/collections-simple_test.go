@@ -44,3 +44,9 @@ func BenchmarkRemoveElements(b *testing.B) {
 		col.Remove(i)
 	}
 }
+
+func Test_simpleCollectionAddMany(t *testing.T) {
+	col := NewSimpleCollection[int]()
+	assert.Equal(t, 3, col.Add(1, 2, 3))
+	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
+}

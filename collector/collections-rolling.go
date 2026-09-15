@@ -38,10 +38,11 @@ func (c *rollingCollection[T]) Add(values ...T) int {
 	defer c.lock.Unlock()
 	added := 0
 	for _, v := range values {
+		value := v
 		if c.count >= cap(c.data) {
 			c.removeIndex(0)
 		}
-		c.data[c.count] = &v
+		c.data[c.count] = &value
 		c.count++
 		added++
 	}

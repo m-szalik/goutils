@@ -45,3 +45,9 @@ func convert[T comparable](source []*T) []T {
 	}
 	return conv
 }
+
+func Test_rollingCollectionAddMany(t *testing.T) {
+	col := NewRollingCollection[int](5)
+	assert.Equal(t, 3, col.Add(1, 2, 3))
+	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
+}
