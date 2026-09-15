@@ -55,8 +55,9 @@ func (k *keyFile) Keys() []string {
 
 // Get - get data from database
 func (k *keyFile) Get(key string) []byte {
-	buff := k.data[key]
-	return buff
+	k.lock.Lock()
+	defer k.lock.Unlock()
+	return k.data[key]
 }
 
 func (k *keyFile) save() error {

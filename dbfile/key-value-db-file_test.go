@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"slices"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,5 +61,29 @@ func TestOverrideKey(t *testing.T) {
 		assert.NoError(t, err)
 		value := db.Get("key")
 		assert.Equal(t, "abc", string(value))
+	})
+}
+
+// Meaningful under -race.
+func TestConcurrentAccess(t *testing.T) {
+	withKeyValueDBFile(t, func(t *testing.T, db KeyValueDBFile) {
+		var wg sync.WaitGroup
+		for i := 0; i < 4; i++ {
+			wg.Add(2)
+			go func(i int) {
+				defer wg.Done()
+				for j := 0; j < 10; j++ {
+					assert.NoError(t, db.Put(fmt.Sprintf("k%d", i), []byte("v")))
+				}
+			}(i)
+			go func(i int) {
+				defer wg.Done()
+				for j := 0; j < 10; j++ {
+					_ = db.Get(fmt.Sprintf("k%d", i))
+					_ = db.Keys()
+				}
+			}(i)
+		}
+		wg.Wait()
 	})
 }
