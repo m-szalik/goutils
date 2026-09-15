@@ -51,11 +51,10 @@ func (jeh *JoinErrorHelper) Iterate() <-chan error {
 }
 
 // NewJoinErrorHelper creates a helper optionally initialized with errs.
+// Nil errors are ignored.
 func NewJoinErrorHelper(errs ...error) *JoinErrorHelper {
-	if errs == nil {
-		errs = make([]error, 0)
+	jeh := &JoinErrorHelper{
+		errs: make([]error, 0, len(errs)),
 	}
-	return &JoinErrorHelper{
-		errs: errs,
-	}
+	return jeh.Append(errs...)
 }
