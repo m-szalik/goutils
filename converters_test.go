@@ -3,10 +3,14 @@ package goutils
 import (
 	"fmt"
 	"math"
+	"strings"
 	"testing"
 
 	assert2 "github.com/stretchr/testify/assert"
 )
+
+// a number that does not fit into float64
+var hugeFloatString = strings.Repeat("9", 400) + ".0"
 
 func Test_ParseValue(t *testing.T) {
 	tests := []struct {
@@ -40,6 +44,22 @@ func Test_ParseValue(t *testing.T) {
 		{
 			arg:  " some text ",
 			want: " some text ",
+		},
+		{
+			arg:  "3000000000",
+			want: int64(3000000000),
+		},
+		{
+			arg:  "99999999999999999999",
+			want: "99999999999999999999",
+		},
+		{
+			arg:  "0.1",
+			want: 0.1,
+		},
+		{
+			arg:  hugeFloatString,
+			want: hugeFloatString,
 		},
 	}
 	for _, tt := range tests {

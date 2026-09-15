@@ -68,17 +68,14 @@ func ParseValue(str string) interface{} {
 		var err error
 		matchAny := false
 		if parseValueIntRegEx.MatchString(s) {
-			r, err = strconv.ParseInt(s, 10, 32)
+			r, err = strconv.ParseInt(s, 10, 64)
 			matchAny = true
 		}
 		if parseValueFloatRegEx.MatchString(s) {
-			r, err = strconv.ParseFloat(s, 32)
+			r, err = strconv.ParseFloat(s, 64)
 			matchAny = true
 		}
-		if matchAny {
-			if err != nil {
-				panic(fmt.Sprintf("error parsing '%s' as number", s))
-			}
+		if matchAny && err == nil {
 			return r
 		}
 	}
