@@ -15,7 +15,7 @@ jobs:
     name: REUSE compliance
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: fsfe/reuse-action@v6
 
   lint:
@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -43,7 +43,7 @@ jobs:
       matrix:
         go-version: [ '1.22', 'stable' ]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -62,7 +62,7 @@ jobs:
       contents: read
       statuses: write
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Go
       uses: actions/setup-go@v5
