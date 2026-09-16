@@ -49,3 +49,42 @@ func TestNewDataPointsCollector(t *testing.T) {
 		assert.Equal(t, float64(2), minValue)
 	})
 }
+
+func TestDataPointsCollectorCapacity(t *testing.T) {
+	mockTp := goutils.NewMockTimeProvider()
+	c := newDataPointsCollectorInternal(3, mockTp)
+	for _, v := range []float64{10, 20, 30} {
+		mockTp.Add(time.Second)
+		c.Collect(v)
+	}
+	end := mockTp.Now()
+	assert.Equal(t, []float64{10, 20, 30}, c.GetDataPointsBetween(time.Time{}, end))
+	v, _, err := c.GetDataPointN(0)
+	assert.NoError(t, err)
+	assert.Equal(t, 30.0, v)
+	v, _, err = c.GetDataPointN(2)
+	assert.NoError(t, err)
+	assert.Equal(t, 10.0, v)
+	_, _, err = c.GetDataPointN(3)
+	assert.Error(t, err)
+	assert.Equal(t, 20.0, c.Avg(end, time.Hour))
+
+	mockTp.Add(time.Second)
+	c.Collect(40)
+	end = mockTp.Now()
+	assert.Equal(t, []float64{20, 30, 40}, c.GetDataPointsBetween(time.Time{}, end))
+	v, _, _ = c.GetDataPointN(0)
+	assert.Equal(t, 40.0, v)
+	assert.Equal(t, 30.0, c.Avg(end, time.Hour))
+	assert.Equal(t, 40.0, c.Max(end, time.Hour))
+	assert.Equal(t, 20.0, c.Min(end, time.Hour))
+}
+
+func TestDataPointsCollectorSingleSample(t *testing.T) {
+	c := NewDataPointsCollector(1)
+	c.Collect(1)
+	c.Collect(2)
+	v, _, err := c.GetDataPointN(0)
+	assert.NoError(t, err)
+	assert.Equal(t, 2.0, v)
+}

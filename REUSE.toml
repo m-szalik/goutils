@@ -1,0 +1,8 @@
+version = 1
+SPDX-PackageName = "goutils"
+SPDX-PackageDownloadLocation = "https://github.com/m-szalik/goutils"
+
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "2018-2026 Marek Szalik"
+SPDX-License-Identifier = "Apache-2.0"

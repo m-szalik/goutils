@@ -44,3 +44,23 @@ func TestJoinErrorHelper(t *testing.T) {
 		})
 	}
 }
+
+func TestNewJoinErrorHelperSkipsNil(t *testing.T) {
+	err := errors.New("x")
+	jeh := NewJoinErrorHelper(nil, err, nil)
+	assert2.Equal(t, 1, jeh.ErrorsCount())
+	assert2.Equal(t, err, jeh.AsError())
+	assert2.Equal(t, 0, NewJoinErrorHelper(nil).ErrorsCount())
+	assert2.NoError(t, NewJoinErrorHelper(nil).AsError())
+}
+
+func TestJoinErrorHelperIterate(t *testing.T) {
+	e0, e1 := errors.New("0"), errors.New("1")
+	got := make([]error, 0)
+	for err := range NewJoinErrorHelper(e0, nil, e1).Iterate() {
+		got = append(got, err)
+	}
+	assert2.Equal(t, []error{e0, e1}, got)
+	_, open := <-NewJoinErrorHelper().Iterate()
+	assert2.False(t, open)
+}

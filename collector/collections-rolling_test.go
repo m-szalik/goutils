@@ -1,8 +1,10 @@
 package collector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_rollingCollectionAdd(t *testing.T) {
@@ -44,4 +46,46 @@ func convert[T comparable](source []*T) []T {
 		conv[i] = *d
 	}
 	return conv
+}
+
+func Test_rollingCollectionAddMany(t *testing.T) {
+	col := NewRollingCollection[int](5)
+	assert.Equal(t, 3, col.Add(1, 2, 3))
+	assert.Equal(t, []int{1, 2, 3}, convert(col.AsSlice()))
+}
+
+func Test_rollingCollectionRemoveNotFull(t *testing.T) {
+	col := NewRollingCollection[int](5)
+	col.Add(1, 2, 2, 3)
+	assert.Equal(t, 0, col.Remove(9))
+	assert.Equal(t, 2, col.Remove(2))
+	assert.Equal(t, []int{1, 3}, convert(col.AsSlice()))
+	assert.False(t, col.Contains(2))
+}
+
+func Test_rollingCollectionRemoveLastWhenFull(t *testing.T) {
+	col := NewRollingCollection[int](3)
+	col.Add(1, 2, 3)
+	assert.Equal(t, 1, col.Remove(3))
+	assert.Equal(t, 2, col.Length())
+	assert.False(t, col.Contains(3))
+	assert.Equal(t, []int{1, 2}, convert(col.AsSlice()))
+}
+
+func Test_rollingCollectionZeroCapacity(t *testing.T) {
+	col := NewRollingCollection[int](0)
+	assert.Equal(t, 0, col.Add(1))
+	assert.Equal(t, 0, col.Length())
+	timed := NewTimedCollection[int](0, time.Minute)
+	assert.Equal(t, 0, timed.Add(1))
+	assert.Equal(t, 0, timed.Length())
+}
+
+func Test_rollingCollectionAsSliceIsCopy(t *testing.T) {
+	col := NewRollingCollection[int](2)
+	col.Add(1, 2)
+	snapshot := col.AsSlice()
+	col.Add(3)
+	assert.Equal(t, []int{1, 2}, convert(snapshot))
+	assert.Equal(t, []int{2, 3}, convert(col.AsSlice()))
 }

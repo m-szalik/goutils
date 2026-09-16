@@ -9,24 +9,22 @@ type rollingCollection[T comparable] struct {
 }
 
 func (c *rollingCollection[T]) removeIndex(index int) {
-	for i := index + 1; i < len(c.data); i++ {
-		c.data[i-1] = c.data[i]
-	}
+	copy(c.data[index:c.count-1], c.data[index+1:c.count])
 	c.count--
+	c.data[c.count] = nil
 }
 
 func (c *rollingCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	to := len(c.data)
 	removals := 0
 	for _, removeMe := range removeMeElements {
-		for i := 0; i < to; i++ {
-			ptr := c.data[i]
-			if *ptr == removeMe {
+		for i := 0; i < c.count; {
+			if *c.data[i] == removeMe {
 				c.removeIndex(i)
 				removals++
-				to--
+			} else {
+				i++
 			}
 		}
 	}
@@ -36,12 +34,16 @@ func (c *rollingCollection[T]) Remove(removeMeElements ...T) int {
 func (c *rollingCollection[T]) Add(values ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	if cap(c.data) == 0 {
+		return 0
+	}
 	added := 0
 	for _, v := range values {
+		value := v
 		if c.count >= cap(c.data) {
 			c.removeIndex(0)
 		}
-		c.data[c.count] = &v
+		c.data[c.count] = &value
 		c.count++
 		added++
 	}
@@ -49,10 +51,14 @@ func (c *rollingCollection[T]) Add(values ...T) int {
 }
 
 func (c *rollingCollection[T]) Length() int {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	return c.count
 }
 
 func (c *rollingCollection[T]) Get(index int) *T {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	if index < 0 || index >= c.count {
 		return nil
 	}
@@ -60,10 +66,9 @@ func (c *rollingCollection[T]) Get(index int) *T {
 }
 
 func (c *rollingCollection[T]) Contains(element T) bool {
-	for _, e := range c.data {
-		if e == nil {
-			continue
-		}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	for _, e := range c.data[:c.count] {
 		if *e == element {
 			return true
 		}
@@ -72,7 +77,11 @@ func (c *rollingCollection[T]) Contains(element T) bool {
 }
 
 func (c *rollingCollection[T]) AsSlice() []*T {
-	return c.data[0:c.count]
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	ret := make([]*T, c.count)
+	copy(ret, c.data[:c.count])
+	return ret
 }
 
 // NewRollingCollection returns a fixed-size collection that keeps at most

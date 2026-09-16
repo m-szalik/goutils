@@ -32,3 +32,23 @@ func Test_stackAsSlice(t *testing.T) {
 	expected := []*string{&a, &b}
 	assert.Equal(t, expected, st.AsSlice())
 }
+
+func Test_stackGetOutOfRange(t *testing.T) {
+	st := NewStack[string]()
+	a := "A"
+	st.Push(&a)
+	assert.Nil(t, st.Get(-1))
+	assert.Nil(t, st.Get(1))
+	assert.Equal(t, &a, st.Get(0))
+}
+
+func Test_stackAsSliceIsCopy(t *testing.T) {
+	st := NewStack[string]()
+	a, b, c := "A", "B", "C"
+	st.Push(&a, &b)
+	snapshot := st.AsSlice()
+	st.Pop()
+	st.Push(&c)
+	assert.Equal(t, []*string{&a, &b}, snapshot)
+	assert.Equal(t, []*string{&a, &c}, st.AsSlice())
+}

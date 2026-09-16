@@ -44,20 +44,24 @@ func (s *stack[T]) Pop() *T {
 func (s *stack[T]) AsSlice() []*T {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	return s.data[:]
+	ret := make([]*T, len(s.data))
+	copy(ret, s.data)
+	return ret
 }
 
 func (s *stack[T]) Get(index int) *T {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	length := len(s.data)
-	if index >= length || length == 0 {
+	if index < 0 || index >= length {
 		return nil
 	}
 	return s.data[index]
 }
 
 func (s *stack[T]) Length() int {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	return len(s.data)
 }
 

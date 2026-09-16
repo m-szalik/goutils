@@ -32,3 +32,9 @@ func Test_root(t *testing.T) {
 		})
 	}
 }
+
+func TestRootNNegative(t *testing.T) {
+	assert.InDelta(t, -2, RootN(-8, 3), 0.005)
+	assert.InDelta(t, -3, RootN(-243, 5), 0.005)
+	assert.True(t, math.IsNaN(RootN(-4, 2)))
+}

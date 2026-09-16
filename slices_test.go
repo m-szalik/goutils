@@ -322,3 +322,11 @@ func TestCountMatch_Function(t *testing.T) {
 	assert.Equal(t, 0, CountMatch([]int{1, 2, 3}, ge5))
 	assert.Equal(t, 0, CountMatch([]int{}, ge5))
 }
+
+func TestSliceRemoveKeepsInput(t *testing.T) {
+	in := []int{1, 2, 3, 2}
+	out, removed := SliceRemove(in, 2)
+	assert.Equal(t, 2, removed)
+	assert.Equal(t, []int{1, 3}, out)
+	assert.Equal(t, []int{1, 2, 3, 2}, in)
+}

@@ -13,7 +13,8 @@ func (s *setImpl[T]) AsSlice() []*T {
 	ret := make([]*T, len(s.data))
 	i := 0
 	for k := range s.data {
-		ret[i] = &k
+		key := k
+		ret[i] = &key
 		i++
 	}
 	return ret

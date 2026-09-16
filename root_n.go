@@ -12,6 +12,12 @@ func rootN(x, n float64, accuracyFactor float64) float64 {
 	if x == 0 {
 		return x
 	}
+	if x < 0 {
+		if math.Abs(math.Mod(n, 2)) == 1 { // odd integer root of a negative number
+			return -rootN(-x, n, accuracyFactor)
+		}
+		return math.NaN()
+	}
 	var y float64
 	left := float64(0)
 	right := math.Max(1, x)

@@ -3,9 +3,11 @@ package goutils
 import (
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCopyStructDifferentStructs(t *testing.T) {
@@ -124,4 +126,72 @@ func TestCmpWalkStructAreEqual(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCmpWalkStructAreEqualSpecialValues(t *testing.T) {
+	type withPtr struct{ P *int }
+	type withTime struct{ T time.Time }
+	type withMap struct{ M map[string]int }
+	type withUnexported struct{ n int }
+	type withIface struct{ V any }
+	now := time.Now()
+	one, two := 1, 2
+	tests := []struct {
+		name  string
+		a, b  interface{}
+		equal bool
+	}{
+		{name: "both nil", a: nil, b: nil, equal: true},
+		{name: "nil pointer fields", a: withPtr{}, b: withPtr{}, equal: true},
+		{name: "nil vs non-nil pointer field", a: withPtr{}, b: withPtr{P: &one}},
+		{name: "equal pointer targets", a: withPtr{P: &one}, b: withPtr{P: &one}, equal: true},
+		{name: "different pointer targets", a: withPtr{P: &one}, b: withPtr{P: &two}},
+		{name: "equal time", a: withTime{now}, b: withTime{now}, equal: true},
+		{name: "different time", a: withTime{now}, b: withTime{now.Add(time.Second)}},
+		{name: "equal maps", a: withMap{map[string]int{"a": 1}}, b: withMap{map[string]int{"a": 1}}, equal: true},
+		{name: "different map values", a: withMap{map[string]int{"a": 1}}, b: withMap{map[string]int{"a": 2}}},
+		{name: "different map keys", a: withMap{map[string]int{"a": 1}}, b: withMap{map[string]int{"b": 1}}},
+		{name: "equal unexported", a: withUnexported{1}, b: withUnexported{1}, equal: true},
+		{name: "different unexported", a: withUnexported{1}, b: withUnexported{2}},
+		{name: "equal interface values", a: withIface{"x"}, b: withIface{"x"}, equal: true},
+		{name: "different interface types", a: withIface{"x"}, b: withIface{1}},
+		{name: "different top-level types", a: 1, b: "x"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := CmpWalkStructAreEqual(tt.a, tt.b)
+			if tt.equal {
+				assert.NoError(t, err)
+			} else if assert.Error(t, err) {
+				assert.NotContains(t, err.Error(), "reflect.Value")
+			}
+		})
+	}
+	err := CmpWalkStructAreEqual(1, "x")
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "int and string")
+	}
+}
+
+func TestCopyStructSpecialFields(t *testing.T) {
+	type inner struct {
+		Name   string
+		secret int
+	}
+	type testObject struct {
+		When   time.Time
+		Arr    [2]int
+		Inner  inner
+		hidden string
+	}
+	now := time.Now()
+	src := testObject{When: now, Arr: [2]int{1, 2}, Inner: inner{Name: "x", secret: 7}, hidden: "h"}
+	dst := testObject{}
+	err := CopyStructAll(src, &dst)
+	assert.NoError(t, err)
+	assert.True(t, now.Equal(dst.When))
+	assert.Equal(t, [2]int{1, 2}, dst.Arr)
+	assert.Equal(t, "x", dst.Inner.Name)
+	assert.Equal(t, 0, dst.Inner.secret)
+	assert.Equal(t, "", dst.hidden)
 }

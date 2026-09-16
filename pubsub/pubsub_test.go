@@ -3,14 +3,23 @@ package pubsub
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type testSubscriber struct {
 	cancel context.CancelFunc
+	lock   sync.Mutex
 	data   []int
+}
+
+func (ts *testSubscriber) received() []int {
+	ts.lock.Lock()
+	defer ts.lock.Unlock()
+	return append([]int{}, ts.data...)
 }
 
 func newTestSubscriber(parent context.Context, name int, ps PubSub[int]) *testSubscriber {
@@ -28,7 +37,9 @@ func newTestSubscriber(parent context.Context, name int, ps PubSub[int]) *testSu
 					return
 				}
 				fmt.Printf("test-subscriber %c recived message '%d'\n", name, d)
+				ts.lock.Lock()
 				ts.data = append(ts.data, d)
+				ts.lock.Unlock()
 			case <-ctx.Done():
 				return
 			}
@@ -56,15 +67,15 @@ func TestNewPubSubMultipleSubscribers(t *testing.T) {
 	delay()
 	publishCh <- 2
 	delay()
-	assert.Equal(t, []int{0, 1}, subscribers[0].data)
-	assert.Equal(t, []int{0, 1, 2}, subscribers[1].data)
+	assert.Equal(t, []int{0, 1}, subscribers[0].received())
+	assert.Equal(t, []int{0, 1, 2}, subscribers[1].received())
 	subscribers = append(subscribers, newTestSubscriber(ctx, 'C', ps))
 	delay()
 	publishCh <- 3
 	delay()
-	assert.Equal(t, []int{0, 1}, subscribers[0].data)
-	assert.Equal(t, []int{0, 1, 2, 3}, subscribers[1].data)
-	assert.Equal(t, []int{3}, subscribers[2].data)
+	assert.Equal(t, []int{0, 1}, subscribers[0].received())
+	assert.Equal(t, []int{0, 1, 2, 3}, subscribers[1].received())
+	assert.Equal(t, []int{3}, subscribers[2].received())
 }
 
 func TestNewPubSubShutdown(t *testing.T) {
@@ -86,10 +97,37 @@ func TestNewPubSubShutdown(t *testing.T) {
 	delay()
 	publishCh <- 2
 	delay()
-	assert.Equal(t, []int{0, 1}, subscribers[0].data)
-	assert.Equal(t, []int{0, 1, 2}, subscribers[1].data)
+	assert.Equal(t, []int{0, 1}, subscribers[0].received())
+	assert.Equal(t, []int{0, 1, 2}, subscribers[1].received())
 }
 
 func TestRunExample(t *testing.T) {
 	ExamplePubSub()
+}
+
+func TestNewPubSubSubscriberLeavesDuringPublish(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	ps := NewPubSub[int](ctx)
+	subCtx, subCancel := context.WithCancel(ctx)
+	defer subCancel()
+	subCh := ps.NewSubscriber(subCtx)
+	publishCh := ps.NewPublisher()
+	publishCh <- 0
+	assert.Equal(t, 0, <-subCh)
+	publishCh <- 1 // accepted, but delivery blocks because the subscriber is not reading
+	delay()
+	subCancel() // subscriber leaves without reading
+	delay()
+	done := make(chan struct{})
+	go func() {
+		publishCh <- 2
+		ps.NewSubscriber(ctx)
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("pubsub deadlocked after a subscriber left during publish")
+	}
 }

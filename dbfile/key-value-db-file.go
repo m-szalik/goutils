@@ -55,8 +55,9 @@ func (k *keyFile) Keys() []string {
 
 // Get - get data from database
 func (k *keyFile) Get(key string) []byte {
-	buff := k.data[key]
-	return buff
+	k.lock.Lock()
+	defer k.lock.Unlock()
+	return k.data[key]
 }
 
 func (k *keyFile) save() error {
@@ -64,7 +65,11 @@ func (k *keyFile) save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(k.file, buff, os.ModePerm)
+	tmpFile := k.file + ".tmp"
+	if err := os.WriteFile(tmpFile, buff, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmpFile, k.file)
 }
 
 func (k *keyFile) load() error {

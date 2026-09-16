@@ -18,9 +18,13 @@ func NewMinStable[E comparable](ctx context.Context, ignoreDuration time.Duratio
 		defer close(t.output)
 		var lastReported = initValue
 		var lastInput = initValue
-		ticker := time.NewTicker(ignoreDuration)
-		ticker.Stop()
-		defer ticker.Stop()
+		var timer *time.Timer
+		var timerC <-chan time.Time
+		defer func() {
+			if timer != nil {
+				timer.Stop()
+			}
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -28,13 +32,17 @@ func NewMinStable[E comparable](ctx context.Context, ignoreDuration time.Duratio
 			case inp := <-t.input:
 				if inp != lastInput {
 					lastInput = inp
-					ticker.Reset(ignoreDuration)
+					if timer != nil {
+						timer.Stop()
+					}
+					timer = time.NewTimer(ignoreDuration)
+					timerC = timer.C
 				}
-			case <-ticker.C:
+			case <-timerC:
+				timerC = nil
 				if lastInput != lastReported {
 					lastReported = lastInput
 					t.output <- lastInput
-					ticker.Stop()
 				}
 			}
 		}

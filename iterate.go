@@ -3,15 +3,18 @@ package goutils
 import (
 	"fmt"
 	"reflect"
+	"sort"
 )
 
 // IteratorCallback is called by IterateDeep for every leaf value.
 // Return false to stop traversal early.
 type IteratorCallback func(path string, depth int, kind reflect.Kind, element interface{}) bool
 
-// IterateDeep walks nested structs, maps, slices, arrays, and pointers and calls
-// callback for each non-container value. Pointer values are dereferenced before
-// callback execution.
+// IterateDeep walks nested structs, maps, slices, arrays, pointers and
+// interfaces and calls callback for each non-container value. Pointer and
+// interface values are dereferenced before callback execution; nil pointers
+// and nil interfaces are reported with a nil element. Map entries are visited
+// in the order of their formatted keys.
 func IterateDeep(element interface{}, callback IteratorCallback) {
 	iterateDeep(".", 0, reflect.ValueOf(element), callback)
 }
@@ -19,9 +22,11 @@ func IterateDeep(element interface{}, callback IteratorCallback) {
 func iterateDeep(path string, depth int, val reflect.Value, callback IteratorCallback) bool {
 	kind := val.Kind()
 	switch kind {
-	case reflect.Pointer:
-		uptrValue := val.Elem()
-		return iterateDeep(path, depth, uptrValue, callback)
+	case reflect.Pointer, reflect.Interface:
+		if val.IsNil() {
+			return callback(path, depth, kind, nil)
+		}
+		return iterateDeep(path, depth, val.Elem(), callback)
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < val.Len(); i++ {
 			elementValue := val.Index(i)
@@ -50,15 +55,24 @@ func iterateDeep(path string, depth int, val reflect.Value, callback IteratorCal
 		if path == "." {
 			path = ""
 		}
+		type entry struct {
+			name string
+			key  reflect.Value
+		}
+		entries := make([]entry, 0, val.Len())
 		for _, mapKey := range val.MapKeys() {
-			mapValue := val.MapIndex(mapKey)
-			if !iterateDeep(fmt.Sprintf("%s.%s", path, mapKey), depth+1, mapValue, callback) {
+			entries = append(entries, entry{name: fmt.Sprint(mapKey), key: mapKey})
+		}
+		sort.Slice(entries, func(i, j int) bool { return entries[i].name < entries[j].name })
+		for _, e := range entries {
+			if !iterateDeep(fmt.Sprintf("%s.%s", path, e.name), depth+1, val.MapIndex(e.key), callback) {
 				return false
 			}
 		}
 		return true
+	case reflect.Invalid:
+		return callback(path, depth, kind, nil)
 	default:
-		element := val.Interface()
-		return callback(path, depth, kind, element)
+		return callback(path, depth, kind, val.Interface())
 	}
 }

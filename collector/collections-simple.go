@@ -12,28 +12,22 @@ type simpleCollection[T comparable] struct {
 }
 
 func (c *simpleCollection[T]) removeIndex(index int) {
-	for i := index + 1; i < len(c.data); i++ {
-		c.data[i-1] = c.data[i]
-	}
+	c.data = append(c.data[:index], c.data[index+1:]...)
 }
 
 func (c *simpleCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	to := len(c.data)
 	removals := 0
 	for _, removeMe := range removeMeElements {
-		for i := 0; i < to; i++ {
-			ptr := c.data[i]
-			if *ptr == removeMe {
+		for i := 0; i < len(c.data); {
+			if *c.data[i] == removeMe {
 				c.removeIndex(i)
 				removals++
-				to--
+			} else {
+				i++
 			}
 		}
-	}
-	if removals > 0 {
-		c.data = c.data[0:to]
 	}
 	return removals
 }
@@ -42,7 +36,8 @@ func (c *simpleCollection[T]) Add(elements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	for _, elem := range elements {
-		c.data = append(c.data, &elem)
+		element := elem
+		c.data = append(c.data, &element)
 	}
 	return len(elements)
 }
@@ -71,6 +66,8 @@ func (c *simpleCollection[T]) AsSlice() []*T {
 }
 
 func (c *simpleCollection[T]) Contains(element T) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	for _, e := range c.data {
 		if e == nil {
 			continue
@@ -83,18 +80,16 @@ func (c *simpleCollection[T]) Contains(element T) bool {
 }
 
 func (c *simpleCollection[T]) String() string {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	strs := make([]string, len(c.data))
-	func() {
-		c.lock.Lock()
-		defer c.lock.Unlock()
-		for i, e := range c.data {
-			if e == nil {
-				strs[i] = "nil"
-			} else {
-				strs[i] = fmt.Sprint(*e)
-			}
+	for i, e := range c.data {
+		if e == nil {
+			strs[i] = "nil"
+		} else {
+			strs[i] = fmt.Sprint(*e)
 		}
-	}()
+	}
 	return strings.Join(strs, ",")
 }
 

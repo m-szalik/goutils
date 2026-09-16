@@ -45,6 +45,6 @@ func ExitOnError(err error, code int) {
 func ExitOnErrorf(err error, code int, message string, messageArgs ...interface{}) {
 	if err != nil {
 		msg := fmt.Sprintf(message, messageArgs...) + ":: " + err.Error()
-		ExitNow(code, msg)
+		ExitNow(code, "%s", msg)
 	}
 }

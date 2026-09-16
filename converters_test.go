@@ -3,10 +3,15 @@ package goutils
 import (
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 	"testing"
 
 	assert2 "github.com/stretchr/testify/assert"
 )
+
+// a number that does not fit into float64
+var hugeFloatString = strings.Repeat("9", 400) + ".0"
 
 func Test_ParseValue(t *testing.T) {
 	tests := []struct {
@@ -40,6 +45,22 @@ func Test_ParseValue(t *testing.T) {
 		{
 			arg:  " some text ",
 			want: " some text ",
+		},
+		{
+			arg:  "3000000000",
+			want: int64(3000000000),
+		},
+		{
+			arg:  "99999999999999999999",
+			want: "99999999999999999999",
+		},
+		{
+			arg:  "0.1",
+			want: 0.1,
+		},
+		{
+			arg:  hugeFloatString,
+			want: hugeFloatString,
 		},
 	}
 	for _, tt := range tests {
@@ -141,6 +162,8 @@ func TestAsFloat64(t *testing.T) {
 		{int64(17), 17, false},
 		{int32(17), 17, false},
 		{&vi32, 17, false},
+		{(*int32)(nil), 0, true},
+		{"abc", 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("converting %v of type %T", tt.arg, tt.arg), func(t *testing.T) {
@@ -183,7 +206,10 @@ func TestHexToInt(t *testing.T) {
 		{"-B", -11, assert2.NoError},
 		{"-b", -11, assert2.NoError},
 		{"-0xb", -11, assert2.NoError},
+		{"+0x1f", 31, assert2.NoError},
 		{"invalid", 0, assert2.Error},
+		{"10x5", 0, assert2.Error},
+		{"0x0x5", 0, assert2.Error},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("HexToInt(\"%s\") is %d", tt.args, tt.want), func(t *testing.T) {
@@ -193,5 +219,10 @@ func TestHexToInt(t *testing.T) {
 			}
 			assert2.Equalf(t, tt.want, got, "HexToInt(%v)", tt.args)
 		})
+	}
+	if strconv.IntSize == 64 {
+		got, err := HexToInt("0xFFFFFFFF")
+		assert2.NoError(t, err)
+		assert2.Equal(t, 4294967295, got)
 	}
 }

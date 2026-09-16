@@ -21,15 +21,14 @@ type timedCollection[T comparable] struct {
 func (c *timedCollection[T]) Remove(removeMeElements ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	to := len(c.data)
 	removals := 0
 	for _, removeMe := range removeMeElements {
-		for i := 0; i < to; i++ {
-			ptr := c.data[i]
-			if ptr.element == removeMe {
+		for i := 0; i < c.count; {
+			if c.data[i].element == removeMe {
 				c.removeIndex(i)
 				removals++
-				to--
+			} else {
+				i++
 			}
 		}
 	}
@@ -39,6 +38,9 @@ func (c *timedCollection[T]) Remove(removeMeElements ...T) int {
 func (c *timedCollection[T]) Add(values ...T) int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	if cap(c.data) == 0 {
+		return 0
+	}
 	for _, value := range values {
 		if c.count >= cap(c.data) {
 			if c.cleanup() == 0 {
@@ -49,21 +51,26 @@ func (c *timedCollection[T]) Add(values ...T) int {
 			time:    c.timeProvider.Now().Add(c.duration),
 			element: value,
 		}
+		c.count++
 	}
-	c.count++
 	return len(values)
 }
 
 func (c *timedCollection[T]) Length() int {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.cleanup()
 	return c.count
 }
 
 func (c *timedCollection[T]) Get(index int) *T {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.cleanup()
 	if index < 0 || index >= c.count {
 		return nil
 	}
-	wrapper := c.data[index]
-	return &wrapper.element
+	return &c.data[index].element
 }
 
 func (c *timedCollection[T]) AsSlice() []*T {
@@ -78,10 +85,10 @@ func (c *timedCollection[T]) AsSlice() []*T {
 }
 
 func (c *timedCollection[T]) Contains(element T) bool {
-	for _, e := range c.data {
-		if e == nil {
-			continue
-		}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.cleanup()
+	for _, e := range c.data[:c.count] {
 		if e.element == element {
 			return true
 		}

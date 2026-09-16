@@ -79,6 +79,8 @@ func (a *dataPointsCollectorImpl) GetDataPointN(n int) (float64, *time.Time, err
 }
 
 func (a *dataPointsCollectorImpl) GetDataPointsBetween(start, end time.Time) []float64 {
+	a.lock.Lock()
+	defer a.lock.Unlock()
 	out := make([]float64, 0)
 	for _, dp := range a.data {
 		if dp == nil || dp.t.Before(start) {
@@ -95,19 +97,15 @@ func (a *dataPointsCollectorImpl) GetDataPointsBetween(start, end time.Time) []f
 func (a *dataPointsCollectorImpl) Collect(value float64) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
-	if a.index > a.maxSamples-2 {
-		for i := 0; i < a.maxSamples-1; i++ {
-			a.data[i] = a.data[i+1]
-		}
-	} else {
-		defer func() {
-			a.index++
-		}()
+	if a.index >= a.maxSamples {
+		copy(a.data, a.data[1:])
+		a.index = a.maxSamples - 1
 	}
 	a.data[a.index] = &dataPointEntry{
 		t:     a.timeProvider.Now(),
 		value: value,
 	}
+	a.index++
 }
 
 func (a *dataPointsCollectorImpl) Avg(end time.Time, backDuration time.Duration) float64 {
